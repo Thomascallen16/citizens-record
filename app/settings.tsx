@@ -13,8 +13,10 @@ export default function SettingsScreen() {
   const [label, setLabel] = useState(caseProfile.label);
   const [court, setCourt] = useState(caseProfile.court);
   const [caseNumber, setCaseNumber] = useState(caseProfile.caseNumber);
-  useEffect(() => { setLabel(caseProfile.label); setCourt(caseProfile.court); setCaseNumber(caseProfile.caseNumber); }, [caseProfile]);
-  function save() { saveCaseProfile({ label: label.trim() || "Untitled local workspace", court: court.trim() || "Court not recorded", caseNumber: caseNumber.trim() || "Case identifier not recorded" }); Alert.alert("Saved locally", "These workspace labels are stored on this device in the MVP."); }
+  const [jurisdiction, setJurisdiction] = useState(caseProfile.jurisdiction);
+  const [supervisionConditions, setSupervisionConditions] = useState(caseProfile.supervisionConditions);
+  useEffect(() => { setLabel(caseProfile.label); setCourt(caseProfile.court); setCaseNumber(caseProfile.caseNumber); setJurisdiction(caseProfile.jurisdiction); setSupervisionConditions(caseProfile.supervisionConditions); }, [caseProfile]);
+  function save() { saveCaseProfile({ label: label.trim() || "Untitled local workspace", court: court.trim() || "Court not recorded", caseNumber: caseNumber.trim() || "Case identifier not recorded", jurisdiction: jurisdiction.trim() || "Jurisdiction not recorded", supervisionConditions: supervisionConditions.trim() || "No condition source added" }); Alert.alert("Saved locally", "These workspace labels are stored on this device in the MVP."); }
   return (
     <ScreenContainer edges={["top", "bottom", "left", "right"]} style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -24,7 +26,9 @@ export default function SettingsScreen() {
         <DisclosureBanner compact />
         <Text style={styles.label}>Workspace label</Text><TextInput value={label} onChangeText={setLabel} style={styles.input} placeholder="Example: Smith matter" placeholderTextColor="#8B97A5" returnKeyType="next" />
         <Text style={styles.label}>Court</Text><TextInput value={court} onChangeText={setCourt} style={styles.input} placeholder="Court name" placeholderTextColor="#8B97A5" returnKeyType="next" />
-        <Text style={styles.label}>Case identifier</Text><TextInput value={caseNumber} onChangeText={setCaseNumber} style={styles.input} placeholder="Case number" placeholderTextColor="#8B97A5" returnKeyType="done" />
+        <Text style={styles.label}>Case identifier</Text><TextInput value={caseNumber} onChangeText={setCaseNumber} style={styles.input} placeholder="Case number" placeholderTextColor="#8B97A5" returnKeyType="next" />
+        <Text style={styles.label}>Jurisdiction</Text><TextInput value={jurisdiction} onChangeText={setJurisdiction} style={styles.input} placeholder="State, county, or jurisdiction" placeholderTextColor="#8B97A5" returnKeyType="next" />
+        <Text style={styles.label}>Bond or supervision conditions</Text><TextInput value={supervisionConditions} onChangeText={setSupervisionConditions} style={[styles.input, { minHeight: 82 }]} placeholder="Record the source and terms after verification" placeholderTextColor="#8B97A5" multiline textAlignVertical="top" returnKeyType="done" />
         <TouchableOpacity onPress={save} activeOpacity={0.8} style={styles.saveButton}><Text style={styles.saveText}>Save workspace labels</Text><MaterialIcons name="save" size={18} color={colors.white} /></TouchableOpacity>
         <View style={styles.divider} />
         <Text style={styles.sectionTitle}>Privacy and export limits</Text>

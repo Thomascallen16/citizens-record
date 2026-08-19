@@ -14,3 +14,16 @@
 - [x] Add unit tests for local evidence-record state and status handling.
 - [x] Run type checks and targeted tests; resolve errors.
 - [x] Create a marketplace-readiness brief covering iOS, Android, and web distribution prerequisites.
+- [x] Extend the data model for evidence intelligence, relationships, discovery states, deadlines, and case alerts.
+- [x] Expand the Today view into a source-linked Case Intelligence Dashboard.
+- [x] Add evidence metadata, potential-discrepancy review, and document-comparison workflow states.
+- [x] Build an interactive chronology that distinguishes exact, approximate, ranged, and conflicting event times.
+- [x] Add a discovery-category checklist and Expected → Requested → Received → Reviewed → Missing tracking.
+- [x] Build a source-controlled public research workflow that retains citation metadata and research status.
+- [x] Build a records-request draft workflow and source-linked filing/provenance workspace.
+- [x] Add people and witness profiles limited to user-entered or authorized public information.
+- [x] Add local data export, clear-data, and per-case deletion controls.
+- [x] Add a grounded assistant interface that exposes only source-linked workspace findings and limitations.
+- [x] Update architecture, security, and release-readiness documentation for the Phase 2 scope.
+- [x] Add and run tests for Phase 2 states, safe labels, and local data controls.
+- [x] Verify the extended experience at mobile portrait and desktop-responsive layouts.
