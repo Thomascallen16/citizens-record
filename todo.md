@@ -1,0 +1,33 @@
+# Project TODO
+
+- [x] Define Drizzle schema for user-owned cases, evidence rows, chronology events, acquisition items, source records, motion drafts, and subscription entitlements.
+- [x] Apply database migration and verify all data models enforce owner-scoped relationships.
+- [x] Build protected tRPC procedures that enforce user ownership for every case, evidence, chronology, acquisition, draft, and export operation.
+- [x] Build case dashboard with create/manage case flow for verified case number, court, caption, and party role.
+- [x] Build evidence matrix CRUD with exact confidence labels: PRIMARY-RECORD, USER-REPORTED, VERIFY, SOURCE-UNAVAILABLE, and CONFLICTING.
+- [x] Build verification-first chronology CRUD with source IDs, confidence labels, validation-record fields, and date ordering.
+- [x] Build record-acquisition queue CRUD with priority, source-gaps, and next actions.
+- [x] Add source-linked CSV and Markdown exports for evidence matrices, chronologies, and motion drafts with provenance metadata and a visible organization/research disclaimer.
+- [x] Add server-enforced Stripe entitlement checks that deny motion drafting without an active paid subscription.
+- [x] Add paid motion drafting for missing-discovery requests, motions to compel, and user-selected motion types using selected evidence rows only.
+- [x] Add motion-draft review with visible source table, unresolved VERIFY/SOURCE-UNAVAILABLE warnings, adverse/limiting rows, authority placeholders, and the exact DRAFT — REVIEW BEFORE FILING label before export is enabled.
+- [x] Implement responsive professional legal-workflow UI with accessible navigation and empty/loading/error states.
+- [ ] Add automated ownership-isolation and export-content coverage in addition to the completed entitlement and draft-safeguard tests.
+- [x] Add Vitest coverage for server-side entitlement enforcement and source-linked draft safeguards.
+- [x] Run type checks, unit tests, production build, and visual verification at desktop and mobile breakpoints.
+- [ ] Save final checkpoint after all completed items are marked complete.
+- [ ] Present exact Stripe configuration, GitHub push, and production-publish actions for user confirmation before executing them.
+- [ ] Push the confirmed production-ready release to https://github.com/Thomascallen16/citizens-recordapp after user confirmation.
+- [ ] Add a dedicated source-records table with user/case ownership, provenance fields, stable source IDs, and identifiers referenced by evidence and chronology rows.
+- [ ] Add database-level foreign-key constraints or equivalent integrity guarantees for all case-linked records, then review and apply the resulting migration.
+- [x] Add a dedicated source-records table with user/case ownership, provenance fields, stable source IDs, and identifiers referenced by evidence and chronology rows.
+- [x] Add database-level foreign-key constraints or equivalent integrity guarantees for all case-linked records, then review and apply the resulting migration.
+- [ ] Verify and document consistent owner-scoping for all case-linked reads and writes after the final schema migration.
+- [x] Implement and verify the professional frontend case dashboard, source ledger, evidence matrix, chronology, acquisition queue, drafting review, and responsive navigation.
+- [x] Add owner-scoped update and delete procedures plus corresponding UI actions for evidence rows, chronology events, and acquisition items.
+- [x] Add owner-scoped update and delete procedures plus corresponding UI actions for evidence rows, chronology events, and acquisition items.
+- [ ] Verify the motion-draft CSV and Markdown export paths show provenance and the organization/research disclaimer before delivery.
+- [ ] Add editable case-management controls for court, caption, party role, and case number, then verify the flow end to end.
+- [ ] Add explicit error states and retry messaging for failed workspace queries, exports, and paid-drafting actions.
+- [ ] Complete motion-draft CSV and Markdown exports so both delivered artifacts carry provenance and the organization/research disclaimer.
+- [ ] Re-run final responsive UI verification after the remaining manage-flow, error-state, and export fixes.
