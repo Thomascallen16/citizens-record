@@ -31,3 +31,11 @@
 - [ ] Add explicit error states and retry messaging for failed workspace queries, exports, and paid-drafting actions.
 - [ ] Complete motion-draft CSV and Markdown exports so both delivered artifacts carry provenance and the organization/research disclaimer.
 - [ ] Re-run final responsive UI verification after the remaining manage-flow, error-state, and export fixes.
+- [ ] Confirm whether the provided ProofFlow live-Stripe brief applies to the current Citizens Record project before changing any payment configuration.
+- [ ] If confirmed for this project, configure only the supplied live Stripe product and price identifiers through secure environment settings and add customer-portal access without exposing credentials.
+- [x] Configure the Citizens Record Pro $19 USD/month recurring Stripe price and subscription checkout without hard-coding billing amounts as the runtime source of truth.
+- [x] Create the confirmed live Citizens Record Pro Stripe product and USD 19/month recurring price, then save only the Price ID in protected configuration.
+- [ ] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
+- [ ] Switch the project from Stripe test mode to live keys in Settings → Payment before accepting real customer payments.
+- [ ] Recreate or select the Citizens Record Pro $19/month product and Price ID in the live Stripe account after live mode is enabled.
+- [x] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
