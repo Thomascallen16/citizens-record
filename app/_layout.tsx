@@ -126,7 +126,7 @@ export default function RootLayout() {
 
 function SessionLock({ onUnlock }: { onUnlock: () => void }) {
   const [message, setMessage] = useState("Your workspace was protected after backgrounding.");
-  async function unlock() { const result = await authenticateWorkspace("Unlock CaseCompass workspace"); if (result.success) onUnlock(); else setMessage(result.message || "Authentication was not completed."); }
+  async function unlock() { const result = await authenticateWorkspace("Unlock Pro Se Compass workspace"); if (result.success) onUnlock(); else setMessage(result.message || "Authentication was not completed."); }
   return <View style={lockStyles.overlay}><View style={lockStyles.card}><View style={lockStyles.icon}><Text style={lockStyles.iconText}>⌁</Text></View><Text style={lockStyles.title}>Workspace locked</Text><Text style={lockStyles.body}>{message}</Text><TouchableOpacity onPress={unlock} style={lockStyles.button}><Text style={lockStyles.buttonText}>Unlock with device authentication</Text></TouchableOpacity><Text style={lockStyles.note}>If biometric settings changed, use your device passcode when offered. This session gate does not replace encrypted data storage.</Text></View></View>;
 }
 

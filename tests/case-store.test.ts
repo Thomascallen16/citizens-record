@@ -9,7 +9,7 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
 
 import { discoveryCategories, discoveryStateLabel, kindLabel, nextDiscoveryState, statusLabel, timePrecisionLabel } from "../lib/case-store";
 
-describe("CaseCompass evidence semantics", () => {
+describe("Pro Se Compass evidence semantics", () => {
   it("keeps source status labels explicit and readable", () => {
     expect(statusLabel("SOURCE_UNAVAILABLE")).toBe("SOURCE UNAVAILABLE");
     expect(statusLabel("PRIMARY_RECORD")).toBe("PRIMARY RECORD");

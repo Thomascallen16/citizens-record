@@ -28,9 +28,9 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "CaseCompass",
+  appName: "Pro Se Compass",
   appSlug: "casecompass",
-  // Project-hosted URL for the CaseCompass brand mark.
+  // Project-hosted URL for the Pro Se Compass brand mark.
   logoUrl: "/manus-storage/casecompass-icon_73fc738e.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,

@@ -1,12 +1,12 @@
-# CaseCompass — Mobile Interface Design Plan
+# Pro Se Compass — Mobile Interface Design Plan
 
 ## Product Intent and Safety Boundary
 
-CaseCompass is a private case-organization and public-information research workspace for people representing themselves in a legal matter. It helps a person collect records, preserve where each item came from, compare accounts, prepare neutral questions, and track missing materials. It must never claim to be a lawyer, provide attorney-client representation, decide disputed facts, promise a legal outcome, or imply that a filing is ready to submit.
+Pro Se Compass is a private case-organization and public-information research workspace for people representing themselves in a legal matter. It helps a person collect records, preserve where each item came from, compare accounts, prepare neutral questions, and track missing materials. It must never claim to be a lawyer, provide attorney-client representation, decide disputed facts, promise a legal outcome, or imply that a filing is ready to submit.
 
 The MVP is deliberately **local-first**. Sample records are clearly identified as fictional, and live search, docket retrieval, automatic filing, e-signature, service, legal conclusions, and legal-advice chat are outside the first release. This makes the core evidence workflow reviewable before high-risk integrations are considered.
 
-> **Visible product disclosure:** “CaseCompass is an organization and research tool, not a law firm or a substitute for legal advice. Review court rules and consult a qualified attorney or legal aid service before filing or relying on any document.”
+> **Visible product disclosure:** “Pro Se Compass is an organization and research tool, not a law firm or a substitute for legal advice. Review court rules and consult a qualified attorney or legal aid service before filing or relying on any document.”
 
 ## Design Principles
 
@@ -32,7 +32,7 @@ Every statement that enters the workspace is classified and source-linked. `FACT
 
 ### First-use flow
 
-The user opens CaseCompass and sees the scope disclosure before any substantive tool. After acknowledging it, the user arrives at **Today**, where a brief “Start with the record” prompt explains that a source can be a court record, a user-reported account, a research lead, or an item that still must be obtained. The user then selects **New record** and adds a neutral statement or question instead of a conclusion.
+The user opens Pro Se Compass and sees the scope disclosure before any substantive tool. After acknowledging it, the user arrives at **Today**, where a brief “Start with the record” prompt explains that a source can be a court record, a user-reported account, a research lead, or an item that still must be obtained. The user then selects **New record** and adds a neutral statement or question instead of a conclusion.
 
 ### Source-traceable evidence flow
 
@@ -64,7 +64,7 @@ The main navigation uses four bottom tabs: **Today**, **Evidence**, **Timeline**
 
 ## Color Choices
 
-CaseCompass uses a calm, document-oriented palette that feels trustworthy without mimicking a court seal or law firm. The deep slate primary and warm paper background keep long-form reading comfortable; status colors are reserved for provenance and task states.
+Pro Se Compass uses a calm, document-oriented palette that feels trustworthy without mimicking a court seal or law firm. The deep slate primary and warm paper background keep long-form reading comfortable; status colors are reserved for provenance and task states.
 
 | Token | Hex value | Use |
 | --- | --- | --- |

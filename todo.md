@@ -10,7 +10,7 @@
 - [x] Implement a guided Add Record flow with validation and local persistence.
 - [x] Add persistent organization-only legal boundary language to key screens.
 - [x] Add a Case Settings view with locally held matter identity fields and export limitations.
-- [x] Create a unique CaseCompass icon and update mobile branding configuration.
+- [x] Create a unique Pro Se Compass icon and update mobile branding configuration.
 - [x] Add unit tests for local evidence-record state and status handling.
 - [x] Run type checks and targeted tests; resolve errors.
 - [x] Create a marketplace-readiness brief covering iOS, Android, and web distribution prerequisites.
@@ -27,3 +27,5 @@
 - [x] Update architecture, security, and release-readiness documentation for the Phase 2 scope.
 - [x] Add and run tests for Phase 2 states, safe labels, and local data controls.
 - [x] Verify the extended experience at mobile portrait and desktop-responsive layouts.
+- [x] Rename all user-facing CaseCompass / Case Compass product references to Pro Se Compass while retaining required stable technical identifiers.
+- [x] Validate user-facing naming, build configuration, and documentation after the Pro Se Compass rename.

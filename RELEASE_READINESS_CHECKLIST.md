@@ -1,8 +1,8 @@
-# CaseCompass Phase 2 Release-Readiness Checklist
+# Pro Se Compass Phase 2 Release-Readiness Checklist
 
 ## Current Release Position
 
-CaseCompass Phase 2 is a **local-first case organization and legal-information research workspace**. The current build adds evidence metadata, a reconstruction timeline, discovery lifecycle tracking, source-controlled research entries, editable public-records request drafts, source-linked filing-workspace drafts, people profiles, a local workspace-review assistant, clipboard export, local clearing, and optional native-device re-authentication.
+Pro Se Compass Phase 2 is a **local-first case organization and legal-information research workspace**. The current build adds evidence metadata, a reconstruction timeline, discovery lifecycle tracking, source-controlled research entries, editable public-records request drafts, source-linked filing-workspace drafts, people profiles, a local workspace-review assistant, clipboard export, local clearing, and optional native-device re-authentication.
 
 > **Not ready for public marketplace submission:** The app is not yet equipped for real document uploads, encrypted structured case storage, cloud backup, formal legal research coverage, remote AI analysis, court integration, electronic filing, payment/subscription management, or an independently reviewed privacy/security program.
 

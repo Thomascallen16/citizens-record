@@ -1,10 +1,10 @@
-# CaseCompass Phase 2 Architecture
+# Pro Se Compass Phase 2 Architecture
 
 ## Operating Model
 
-CaseCompass remains a **local-first case organization and legal-information research workspace**. Its Phase 2 workflow is centered on a user-owned case workspace, not a legal service. Every record, research item, task, draft, and alert must display its provenance and current verification state. The product records uncertainty rather than resolving it: a user report remains `USER_REPORTED`, an unlocated item remains `SOURCE_UNAVAILABLE` or `POSSIBLY_MISSING`, and a mismatch remains a `POTENTIAL_DISCREPANCY` for review.
+Pro Se Compass remains a **local-first case organization and legal-information research workspace**. Its Phase 2 workflow is centered on a user-owned case workspace, not a legal service. Every record, research item, task, draft, and alert must display its provenance and current verification state. The product records uncertainty rather than resolving it: a user report remains `USER_REPORTED`, an unlocated item remains `SOURCE_UNAVAILABLE` or `POSSIBLY_MISSING`, and a mismatch remains a `POTENTIAL_DISCREPANCY` for review.
 
-> **Safety boundary:** CaseCompass does not represent users, create an attorney-client relationship, authenticate evidence, determine admissibility, recommend a legal strategy, promise an outcome, or file or serve documents. Generated records requests and filing materials are user-generated drafts that require review.
+> **Safety boundary:** Pro Se Compass does not represent users, create an attorney-client relationship, authenticate evidence, determine admissibility, recommend a legal strategy, promise an outcome, or file or serve documents. Generated records requests and filing materials are user-generated drafts that require review.
 
 ## Local Data Model
 

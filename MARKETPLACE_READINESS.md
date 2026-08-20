@@ -1,10 +1,10 @@
-# CaseCompass — Marketplace Readiness Brief
+# Pro Se Compass — Marketplace Readiness Brief
 
 ## Scope of This Brief
 
-CaseCompass is currently a **local-first mobile Phase 2 workspace** that runs through an Expo-based iOS, Android, and web codebase. It demonstrates source-traceable case organization, evidence-intelligence metadata, a reconstruction timeline, discovery lifecycle tracking, source-controlled research entries, editable records-request and filing-workspace drafts, people profiles, a local workspace-review assistant, optional native re-authentication, and local export/clearing controls. It does **not** yet provide live public-record search, accounts, cloud sync, document upload, encrypted document storage, remote AI processing, court filing, electronic service, or attorney representation.
+Pro Se Compass is currently a **local-first mobile Phase 2 workspace** that runs through an Expo-based iOS, Android, and web codebase. It demonstrates source-traceable case organization, evidence-intelligence metadata, a reconstruction timeline, discovery lifecycle tracking, source-controlled research entries, editable records-request and filing-workspace drafts, people profiles, a local workspace-review assistant, optional native re-authentication, and local export/clearing controls. It does **not** yet provide live public-record search, accounts, cloud sync, document upload, encrypted document storage, remote AI processing, court filing, electronic service, or attorney representation.
 
-> **Product boundary:** CaseCompass must be described as an organization and research tool. Store listing language, in-app copy, marketing, and any future automated feature must not claim that the app is a lawyer, supplies legal representation, guarantees a result, authenticates evidence, or determines what should be filed.
+> **Product boundary:** Pro Se Compass must be described as an organization and research tool. Store listing language, in-app copy, marketing, and any future automated feature must not claim that the app is a lawyer, supplies legal representation, guarantees a result, authenticates evidence, or determines what should be filed.
 
 ## Distribution Interpretation
 
@@ -40,7 +40,7 @@ Apple expects a complete, functional app with accurate metadata, accessible URLs
 | Release workstream | Required before store submission | Owner decision needed |
 | --- | --- | --- |
 | **Legal and content posture** | Finalize organization-only disclaimer; create terms, privacy policy, and support policy; verify product claims do not imply representation or outcome prediction | Jurisdictions served, business entity, support contact, age policy |
-| **Data governance** | Produce a data map covering every device permission, SDK, network request, retention period, and subprocesser | Whether CaseCompass will stay local-only or support accounts/sync/AI |
+| **Data governance** | Produce a data map covering every device permission, SDK, network request, retention period, and subprocesser | Whether Pro Se Compass will stay local-only or support accounts/sync/AI |
 | **Security** | Threat model, encryption design, secure deletion approach, dependency audit, incident-response process, and independent security review proportionate to real-data scope | Security owner and acceptable risk model |
 | **Product validation** | Test onboarding, add/edit/review records, timeline, discovery queue, local persistence, dark mode, iOS devices, Android devices, accessibility, offline behavior, and data-clear behavior | Supported device versions and accessibility acceptance criteria |
 | **Store material** | Final app name, icon, screenshots from the actual release build, accurate description, support URL, privacy policy URL, App Store privacy answers, Play Data safety answers, and content ratings | Category, pricing, launch countries, screenshots, and target audience |
@@ -48,7 +48,7 @@ Apple expects a complete, functional app with accurate metadata, accessible URLs
 
 ## Store-Listing Positioning
 
-The release listing should describe only what the app actually does: “CaseCompass is a private case organization and legal-information research workspace designed to help self-represented people gather records, organize evidence, track discovery, build timelines, research public legal sources, and prepare questions and materials for their own review.” It should not use attorney, representation, guarantee, legal outcome, evidence-authentication, or filing-automation claims. Apple’s guidelines require accurate metadata and bar hidden or undocumented functionality; screenshots should show the actual app in use. [4]
+The release listing should describe only what the app actually does: “Pro Se Compass is a private case organization and legal-information research workspace designed to help self-represented people gather records, organize evidence, track discovery, build timelines, research public legal sources, and prepare questions and materials for their own review.” It should not use attorney, representation, guarantee, legal outcome, evidence-authentication, or filing-automation claims. Apple’s guidelines require accurate metadata and bar hidden or undocumented functionality; screenshots should show the actual app in use. [4]
 
 The listing should explain that users are responsible for verifying records, current court rules, deadlines, and filing requirements. A review-before-filing notice should appear wherever an export or future drafting feature is offered. The first paid release should remain local-first until its privacy, security, and compliance design has been independently reviewed.
 

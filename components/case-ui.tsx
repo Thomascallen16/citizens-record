@@ -49,7 +49,7 @@ export function DisclosureBanner({ compact = false }: { compact?: boolean }) {
     <View style={[styles.disclosure, compact && styles.disclosureCompact]}>
       <MaterialIcons name="info-outline" size={18} color={palette.navy} />
       <Text style={styles.disclosureText}>
-        CaseCompass organizes records and research leads. It is not a law firm and does not provide legal advice.
+        Pro Se Compass organizes records and research leads. It is not a law firm and does not provide legal advice.
       </Text>
     </View>
   );

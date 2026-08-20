@@ -29,10 +29,10 @@ export default function TodayScreen() {
   if (!scopeAcknowledged) {
     return <ScreenContainer edges={["top", "bottom", "left", "right"]} style={styles.scopeScreen}>
       <View style={styles.scopeMark}><MaterialIcons name="travel-explore" size={34} color={colors.white} /></View>
-      <Text style={styles.scopeBrand}>CaseCompass</Text>
+      <Text style={styles.scopeBrand}>Pro Se Compass</Text>
       <Text style={styles.scopeTitle}>A private, source-first workspace for your own review.</Text>
       <Text style={styles.scopeBody}>Organize records, identify unanswered questions, track expected materials, and preserve where each statement came from.</Text>
-      <View style={styles.scopeNotice}><MaterialIcons name="gavel" size={19} color={colors.navy} /><Text style={styles.scopeNoticeText}>CaseCompass is not a lawyer or law firm. It does not represent you, make legal decisions, authenticate evidence, or tell you what to file.</Text></View>
+      <View style={styles.scopeNotice}><MaterialIcons name="gavel" size={19} color={colors.navy} /><Text style={styles.scopeNoticeText}>Pro Se Compass is not a lawyer or law firm. It does not represent you, make legal decisions, authenticate evidence, or tell you what to file.</Text></View>
       <Text style={styles.scopeFootnote}>Use official and authorized sources where possible. Treat user-reported material, AI output, and missing items as leads that need review.</Text>
       <TouchableOpacity onPress={acknowledgeScope} activeOpacity={0.82} style={styles.primaryButton}><Text style={styles.primaryButtonText}>I understand — open workspace</Text><MaterialIcons name="arrow-forward" size={19} color={colors.white} /></TouchableOpacity>
     </ScreenContainer>;
@@ -40,7 +40,7 @@ export default function TodayScreen() {
 
   return <ScreenContainer style={styles.container}>
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-      <View style={styles.topRow}><View style={styles.brandRow}><View style={styles.miniMark}><MaterialIcons name="travel-explore" size={18} color={colors.white} /></View><Text style={styles.brand}>CaseCompass</Text></View><TouchableOpacity onPress={() => router.push("/privacy" as never)} activeOpacity={0.7} style={styles.settingsButton}><MaterialIcons name="shield" size={19} color={colors.navy} /></TouchableOpacity></View>
+      <View style={styles.topRow}><View style={styles.brandRow}><View style={styles.miniMark}><MaterialIcons name="travel-explore" size={18} color={colors.white} /></View><Text style={styles.brand}>Pro Se Compass</Text></View><TouchableOpacity onPress={() => router.push("/privacy" as never)} activeOpacity={0.7} style={styles.settingsButton}><MaterialIcons name="shield" size={19} color={colors.navy} /></TouchableOpacity></View>
       <Text style={styles.kicker}>CASE INTELLIGENCE DASHBOARD</Text>
       <Text style={styles.title}>{caseProfile.label}</Text>
       <Text style={styles.caseMeta}>{caseProfile.court} · {caseProfile.caseNumber}</Text>
