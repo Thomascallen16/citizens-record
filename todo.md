@@ -16,8 +16,13 @@
 - [x] Add Vitest coverage for server-side entitlement enforcement and source-linked draft safeguards.
 - [x] Run type checks, unit tests, production build, and visual verification at desktop and mobile breakpoints.
 - [ ] Save final checkpoint after all completed items are marked complete.
-- [ ] Present exact Stripe configuration, GitHub push, and production-publish actions for user confirmation before executing them.
+- [x] Present exact Stripe configuration, GitHub push, and production-publish actions for user confirmation before executing them.
 - [ ] Push the confirmed production-ready release to https://github.com/Thomascallen16/citizens-recordapp after user confirmation.
+- [ ] Configure the supported GitHub export path and record confirmation that the current release reached Thomascallen16/citizens-recordapp.
+- [ ] Use the supported GitHub plugin connection to synchronize release checkpoint 785701dd to Thomascallen16/citizens-recordapp.
+- [ ] Resolve the mismatch between the reported GitHub export and the target repository’s latest visible commit before closing release synchronization.
+- [ ] Resolve the Git remote mismatch: the project connection targets Thomascallen16/citizens-record while the requested destination is Thomascallen16/citizens-recordapp.
+- [ ] Publish the saved Citizens Record release to a dedicated citizens-record-release branch in Thomascallen16/citizens-recordapp while preserving main.
 - [x] Add a dedicated source-records table with user/case ownership, provenance fields, stable source IDs, and identifiers referenced by evidence and chronology rows.
 - [x] Add database-level foreign-key constraints or equivalent integrity guarantees for all case-linked records, then review and apply the resulting migration.
 - [x] Add a dedicated source-records table with user/case ownership, provenance fields, stable source IDs, and identifiers referenced by evidence and chronology rows.
@@ -35,7 +40,7 @@
 - [x] If confirmed for this project, configure only the supplied live Stripe product and price identifiers through secure environment settings and add customer-portal access without exposing credentials. Not applicable; Citizens Record uses its own configuration.
 - [x] Configure the Citizens Record Pro $19 USD/month recurring Stripe price and subscription checkout without hard-coding billing amounts as the runtime source of truth.
 - [x] Create the confirmed live Citizens Record Pro Stripe product and USD 19/month recurring price, then save only the Price ID in protected configuration.
-- [ ] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
+- [x] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
 - [ ] Switch the project from Stripe test mode to live keys in Settings → Payment before accepting real customer payments.
 - [ ] Recreate or select the Citizens Record Pro $19/month product and Price ID in the live Stripe account after live mode is enabled.
 - [x] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
