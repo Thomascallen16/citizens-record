@@ -34,3 +34,5 @@
 - [x] Protect platform credentials and release artifacts with publishing-specific ignore rules.
 - [x] Prepare Google Play and Apple App Store listing, privacy, and review-submission materials.
 - [x] Run production-readiness validation and commit non-secret publishing configuration.
+- [x] Confirm the correct GitHub repository and branch for the Pro Se Compass project history.
+- [x] Push the verified Pro Se Compass publishing-readiness commits to the confirmed GitHub branch.
