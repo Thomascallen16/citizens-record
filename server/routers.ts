@@ -2,8 +2,10 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { acquisitionPriorities, confidenceStatuses } from "../drizzle/schema";
 import { createAcquisitionForCase, createCaseForUser, createChronologyForCase, createEvidenceForCase, createMotionDraftForCase, createSourceForCase, deleteAcquisitionForCase, deleteChronologyForCase, deleteEvidenceForCase, getCaseForUser, getEntitlementForUser, getMotionDraftForUser, listAcquisitionForCase, listCasesForUser, listChronologyForCase, listEvidenceForCase, listMotionDraftsForCase, listSourcesForCase, updateAcquisitionForCase, updateCaseForUser, updateChronologyForCase, updateEvidenceForCase } from "./db";
-import { buildSourceLinkedMotionDraft, ORGANIZATION_DISCLAIMER } from "./legalDraft";
+import { buildSourceLinkedMotionDraft } from "./legalDraft";
 import { hasActiveMotionDraftingEntitlement } from "./entitlements";
+import { buildCaseExport } from "./caseExports";
+import { requireOwnedRecord } from "./ownership";
 import { getStripeClient } from "./stripe";
 import { COOKIE_NAME } from "../shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -13,8 +15,7 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 const confidenceStatusSchema = z.enum(confidenceStatuses);
 const caseInput = z.object({ caseNumber: z.string().trim().min(1).max(160), court: z.string().trim().min(1).max(255), caption: z.string().trim().min(1), partyRole: z.string().trim().min(1).max(160), isVerified: z.boolean() });
 const caseIdInput = z.object({ caseId: z.number().int().positive() });
-async function requireOwnedCase(userId: number, caseId: number) { const record = await getCaseForUser(userId, caseId); if (!record) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found in this workspace." }); return record; }
-function csvEscape(value: unknown) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
+async function requireOwnedCase(userId: number, caseId: number) { return requireOwnedRecord(await getCaseForUser(userId, caseId), "Case"); }
 
 export const appRouter = router({
   system: systemRouter,
@@ -55,7 +56,7 @@ export const appRouter = router({
     get: protectedProcedure.input(z.object({ draftId: z.number().int().positive() })).query(async ({ ctx, input }) => { const draft = await getMotionDraftForUser(ctx.user.id, input.draftId); if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found in this workspace." }); return draft; }),
   }),
   exports: router({
-    caseBundle: protectedProcedure.input(caseIdInput).query(async ({ ctx, input }) => { const caseRecord = await requireOwnedCase(ctx.user.id, input.caseId); const [evidence, chronology, acquisitions] = await Promise.all([listEvidenceForCase(ctx.user.id, input.caseId), listChronologyForCase(ctx.user.id, input.caseId), listAcquisitionForCase(ctx.user.id, input.caseId)]); const disclaimer = `Organization/research disclaimer: ${ORGANIZATION_DISCLAIMER}`; const csvRows = [["record_type", "case_number", "organization_research_disclaimer", "id", "confidence_or_priority", "source_ids", "proposition_or_event", "supporting_or_purpose", "adverse_or_validation", "primary_record_needed", "next_action"], ...evidence.map(row => ["EVIDENCE", caseRecord.caseNumber, disclaimer, `E-${row.id}`, row.confidenceStatus, row.sourceIds, row.proposition, row.supportingMaterial, row.adverseMaterial, row.primaryRecordNeeded, row.nextAction]), ...chronology.map(row => ["CHRONOLOGY", caseRecord.caseNumber, disclaimer, `CH-${row.id}`, row.confidenceStatus, row.sourceIds, `${row.dateText}: ${row.eventDescription}`, "", row.validationRecordNeeded, row.validationRecordNeeded, row.nextAction]), ...acquisitions.map(row => ["ACQUISITION", caseRecord.caseNumber, disclaimer, `AQ-${row.id}`, row.priority, row.sourceIds, row.itemName, row.purpose, "", row.primaryRecordNeeded, row.nextAction])]; const csv = csvRows.map(row => row.map(csvEscape).join(",")).join("\n"); const markdown = `# Evidence Workspace Export\n\n**Case:** ${caseRecord.caption}\n**Case number:** ${caseRecord.caseNumber}\n\n> ${disclaimer}\n\n## Evidence Matrix\n\n${evidence.map(row => `- **E-${row.id} — ${row.confidenceStatus}:** ${row.proposition}  \n  Sources: ${row.sourceIds}  \n  Primary record needed: ${row.primaryRecordNeeded}  \n  Next action: ${row.nextAction}`).join("\n") || "No evidence rows."}\n\n## Verification-First Chronology\n\n${chronology.map(row => `- **${row.dateText} — ${row.confidenceStatus}:** ${row.eventDescription} (Sources: ${row.sourceIds}; Validation record: ${row.validationRecordNeeded})`).join("\n") || "No chronology events."}\n\n## Record-Acquisition Queue\n\n${acquisitions.map(row => `- **${row.priority}:** ${row.itemName} — ${row.primaryRecordNeeded}. Next action: ${row.nextAction}`).join("\n") || "No acquisition items."}`; return { csv, markdown, disclaimer }; }),
+    caseBundle: protectedProcedure.input(caseIdInput).query(async ({ ctx, input }) => { const caseRecord = await requireOwnedCase(ctx.user.id, input.caseId); const [evidence, chronology, acquisitions] = await Promise.all([listEvidenceForCase(ctx.user.id, input.caseId), listChronologyForCase(ctx.user.id, input.caseId), listAcquisitionForCase(ctx.user.id, input.caseId)]); return buildCaseExport({ caseRecord, evidence, chronology, acquisitions }); }),
   }),
 });
 
