@@ -44,3 +44,7 @@
 - [ ] Switch the project from Stripe test mode to live keys in Settings → Payment before accepting real customer payments.
 - [ ] Recreate or select the Citizens Record Pro $19/month product and Price ID in the live Stripe account after live mode is enabled.
 - [x] Add secure customer-portal access and verified webhook handling for Citizens Record subscription lifecycle events.
+- [x] Define source-grounded and non-legal-advice guardrails for a public civic script generator.
+- [x] Add a public interactive generator that labels constitutional text, interpretation, and unresolved questions distinctly.
+- [x] Validate generated-script copy, download behavior, keyboard access, source links, and the existing workspace flow.
+- [x] Commit and push the civic script generator update to the selected CitizensRecord repository.

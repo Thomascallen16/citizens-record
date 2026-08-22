@@ -212,7 +212,7 @@ export default function CivicVoices() {
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-900 text-emerald-50 shadow-[0_8px_20px_rgba(22,68,58,.18)]"><ShieldCheck className="h-5 w-5" /></span>
             <span className="min-w-0"><span className="block font-serif text-base leading-none tracking-tight">The Citizens Record</span><span className="mt-1 block text-[10px] font-bold uppercase tracking-[.16em] text-emerald-800/70">Evidence before opinion</span></span>
           </a>
-          <a href="/" className="hidden text-sm font-semibold text-emerald-900 hover:text-emerald-700 sm:inline-flex sm:items-center sm:gap-2">Private workspace <ArrowUpRight className="h-4 w-4" /></a>
+          <div className="hidden items-center gap-5 sm:flex"><a href="/script-studio" className="text-sm font-semibold text-emerald-900 hover:text-emerald-700">Write a script</a><a href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-900 hover:text-emerald-700">Private workspace <ArrowUpRight className="h-4 w-4" /></a></div>
         </div>
       </header>
 
