@@ -52,3 +52,4 @@
 - [x] Add interactive storyboard and voiceover-cue template generation to the Civic Script Studio.
 - [x] Validate the new templates, download output, source labels, accessibility, and existing Studio flow.
 - [x] Commit and push the expanded Studio update to the selected CitizensRecord repository.
+- [x] Verify the selected CitizensRecord repository’s build, branch, and release readiness, then provide the required user-controlled publish steps.
