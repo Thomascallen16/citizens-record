@@ -48,3 +48,7 @@
 - [x] Add a public interactive generator that labels constitutional text, interpretation, and unresolved questions distinctly.
 - [x] Validate generated-script copy, download behavior, keyboard access, source links, and the existing workspace flow.
 - [x] Commit and push the civic script generator update to the selected CitizensRecord repository.
+- [x] Define source-first storyboard and voiceover-cue template boundaries for the public Studio.
+- [x] Add interactive storyboard and voiceover-cue template generation to the Civic Script Studio.
+- [x] Validate the new templates, download output, source labels, accessibility, and existing Studio flow.
+- [x] Commit and push the expanded Studio update to the selected CitizensRecord repository.
