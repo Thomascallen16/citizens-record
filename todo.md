@@ -29,3 +29,8 @@
 - [x] Verify the extended experience at mobile portrait and desktop-responsive layouts.
 - [x] Rename all user-facing CaseCompass / Case Compass product references to Pro Se Compass while retaining required stable technical identifiers.
 - [x] Validate user-facing naming, build configuration, and documentation after the Pro Se Compass rename.
+- [ ] Audit Expo/EAS readiness, repository state, app identifiers, versioning, and required publishing accounts.
+- [x] Add non-secret EAS production build and submission configuration for Android and iOS.
+- [x] Protect platform credentials and release artifacts with publishing-specific ignore rules.
+- [x] Prepare Google Play and Apple App Store listing, privacy, and review-submission materials.
+- [ ] Run production-readiness validation and commit non-secret publishing configuration.

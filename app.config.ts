@@ -49,6 +49,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
+    buildNumber: "1",
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -63,7 +64,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    permissions: ["POST_NOTIFICATIONS"],
+    versionCode: 1,
     intentFilters: [
       {
         action: "VIEW",
@@ -89,19 +90,6 @@ const config: ExpoConfig = {
       "expo-local-authentication",
       {
         faceIDPermission: "Allow $(PRODUCT_NAME) to use Face ID to protect the local case workspace.",
-      },
-    ],
-    [
-      "expo-audio",
-      {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
-      },
-    ],
-    [
-      "expo-video",
-      {
-        supportsBackgroundPlayback: true,
-        supportsPictureInPicture: true,
       },
     ],
     [
