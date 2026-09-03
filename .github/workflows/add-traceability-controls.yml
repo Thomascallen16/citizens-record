@@ -1,0 +1,32 @@
+name: One-time canonical traceability integration
+on:
+  push:
+    branches: [feature/canonical-record-workflow]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Apply traceability controls
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('client/src/pages/RecordWorkspace.tsx'); s=p.read_text()
+          s=s.replace('createClaim.mutate({ recordId: selectedId, claimText: String(f.get("text") || ""), claimant: String(f.get("claimant") || "") || null, claimDate: String(f.get("date") || "") || null, claimType: String(f.get("type") || "assertion"), notes: String(f.get("notes") || ""), supportingEvidenceIds: [], contraryEvidenceIds: [], sourceRecordIds: [] });', 'createClaim.mutate({ recordId: selectedId, claimText: String(f.get("text") || ""), claimant: String(f.get("claimant") || "") || null, claimDate: String(f.get("date") || "") || null, claimType: String(f.get("type") || "assertion"), notes: String(f.get("notes") || ""), supportingEvidenceIds: f.getAll("supportingEvidenceIds").map(Number), contraryEvidenceIds: f.getAll("contraryEvidenceIds").map(Number), sourceRecordIds: f.getAll("sourceRecordIds").map(Number) });')
+          s=s.replace('<Textarea name="notes" placeholder="Notes" /><p className="text-xs text-stone-500">This form creates a CLAIM, never a FACT. Evidence can be linked through the traceability API.</p>', '<Textarea name="notes" placeholder="Notes" /><label className="text-sm font-medium">Supporting evidence</label><select name="supportingEvidenceIds" multiple className="min-h-24 w-full rounded-md border p-2">{selectedEvidence.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}</select><label className="text-sm font-medium">Contrary evidence</label><select name="contraryEvidenceIds" multiple className="min-h-24 w-full rounded-md border p-2">{selectedEvidence.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}</select><label className="text-sm font-medium">Direct sources</label><select name="sourceRecordIds" multiple className="min-h-20 w-full rounded-md border p-2">{selectedSources.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}</select><p className="text-xs text-stone-500">This form creates a CLAIM, never a FACT. Supporting and contrary evidence are explicit links.</p>')
+          s=s.replace('const selectedUnknowns = unknowns.data ?? [];', 'const selectedUnknowns = unknowns.data ?? [];')
+          s=s.replace('const selected = selectedEvidence.map(x => x.id); createFinding.mutate({ recordId: selectedId, findingText: String(f.get("text") || ""), epistemicCategory: String(f.get("category") || "INFERENCE") as any, rationale: String(f.get("rationale") || ""), confidenceExplanation: String(f.get("confidence") || ""), alternativeExplanation: String(f.get("alternative") || ""), missingEvidence: String(f.get("missing") || ""), whatWouldChangeConclusion: String(f.get("change") || ""), supportingEvidenceIds: String(f.get("category") || "INFERENCE") === "FACT" ? selected.slice(0, 1) : [], contraryEvidenceIds: [], claimIds: [] });', 'const supporting = f.getAll("supportingEvidenceIds").map(Number); createFinding.mutate({ recordId: selectedId, findingText: String(f.get("text") || ""), epistemicCategory: String(f.get("category") || "INFERENCE") as any, rationale: String(f.get("rationale") || ""), confidenceExplanation: String(f.get("confidence") || ""), alternativeExplanation: String(f.get("alternative") || ""), missingEvidence: String(f.get("missing") || ""), whatWouldChangeConclusion: String(f.get("change") || ""), supportingEvidenceIds: supporting, contraryEvidenceIds: f.getAll("contraryEvidenceIds").map(Number), claimIds: f.getAll("claimIds").map(Number) });')
+          s=s.replace('<Textarea name="change" placeholder="What would change this conclusion?" /><p className="text-xs text-stone-500">FACT requires at least one supporting evidence item. This form uses the first available evidence item when FACT is selected.</p>', '<Textarea name="change" placeholder="What would change this conclusion?" /><label className="text-sm font-medium">Supporting evidence</label><select name="supportingEvidenceIds" multiple className="min-h-24 w-full rounded-md border p-2">{selectedEvidence.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}</select><label className="text-sm font-medium">Contrary evidence</label><select name="contraryEvidenceIds" multiple className="min-h-24 w-full rounded-md border p-2">{selectedEvidence.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}</select><label className="text-sm font-medium">Related claims</label><select name="claimIds" multiple className="min-h-20 w-full rounded-md border p-2">{selectedClaims.map(c => <option key={c.id} value={c.id}>{c.claimText}</option>)}</select><p className="text-xs text-stone-500">FACT requires at least one supporting evidence item. INFERENCE may be used for reasoned interpretation.</p>')
+          p.write_text(s)
+          Path('.github/workflows/add-traceability-controls.yml').unlink()
+          PY
+      - name: Commit traceability controls
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "feat: add claim and finding traceability controls"
+          git push
