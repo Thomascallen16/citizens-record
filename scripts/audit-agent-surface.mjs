@@ -12,7 +12,7 @@ const inlineCommand = /`\s*(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add
 const promptCommand = /^(?:[$#]\s+)?(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
 const remoteExecution = /(?:\b(?:curl|wget)\b[^\n|]*\|\s*(?:sh|bash|zsh|fish)|\beval\s+["'`]\s*\$\(\s*(?:curl|wget)\b[^\n)]*\)\s*["'`])/i;
 const imperative = /\b(?:run|execute|install|copy\s+and\s+paste|before\s+continuing|required\s+command|automatically\s+install|execute\s+the\s+following|run\s+this\s+command)\b/i;
-const defensive = /\b(?:never\s+execute|do\s+not\s+(?:run|execute|install)|must\s+not|prohibited|blocked\s+patterns?|forbidden|require\s+human\s+approval|requiring\s+independent\s+verification|independently\s+verify)\b|\b(?:proposals?|examples?)\b[^\n]{0,120}\b(?:verify|verification)\b/i;
+const defensive = /\b(?:never\s+execute|do\s+not\s+(?:run|execute|install)|must\s+not|prohibited|blocked\s+patterns?|forbidden|require\s+human\s+approval|requiring\s+independent\s+verification|independently\s+verify)\b|\b(?:proposals?|examples?)\b[^\n]{0,120}\b(?:verify|verification)\b|\bverify\b[^\n]{0,160}\bbefore\s+install(?:ation|ing)\b/i;
 const explanatory = /\b(?:security\s+(?:documentation|guidance|policy)|(?:dangerous|risk|threat|attack|malicious|unsafe))\b/i;
 const suspiciousUnicode = /[\u202A-\u202E\u2066-\u2069\u200B-\u200D\uFEFF]/;
 
