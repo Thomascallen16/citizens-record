@@ -9,9 +9,10 @@ const agentFile = /(^|\/)(AGENTS\.md|CLAUDE\.md|GEMINI\.md|llms\.txt|llms-full\.
 const shellFence = /^(?:bash|sh|shell|zsh|fish|powershell|pwsh|ps|cmd)$/i;
 const command = /^(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
 const commandAnywhere = /(?:^|[\s`$#])(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
-const remoteExecution = /(?:\b(?:curl|wget)\b[^\n|]*\|\s*(?:sh|bash|zsh|fish)|\beval\s*\(\s*["'`]\$\(\s*(?:curl|wget)\b[^\n)]*\)["'`]\s*\))/i;
+const remoteExecution = /(?:\b(?:curl|wget)\b[^\n|]*\|\s*(?:sh|bash|zsh|fish)|\beval\s*\(\s*["'`]\s*\$\(\s*(?:curl|wget)\b[^\n)]*\)\s*["'`]\s*\))/i;
 const imperative = /\b(?:run|execute|install|copy\s+and\s+paste|before\s+continuing|required\s+command|automatically\s+install|execute\s+the\s+following|run\s+this\s+command)\b/i;
 const defensive = /\b(?:never\s+execute|do\s+not\s+(?:run|execute|install)|must\s+not|prohibited|blocked\s+pattern|forbidden|require\s+human\s+approval|requiring\s+independent\s+verification)\b/i;
+const explanatory = /\b(?:security\s+(?:documentation|guidance|policy)|(?:dangerous|risk|threat|attack|malicious|unsafe))\b/i;
 const suspiciousUnicode = /[\u202A-\u202E\u2066-\u2069\u200B-\u200D\uFEFF]/;
 
 function excerpt(line) {
@@ -54,10 +55,10 @@ export function auditText(text) {
     const hasCommand = commandAnywhere.test(line);
     const hasRemoteExecution = remoteExecution.test(line);
     const imperativeContext = imperative.test(line) || imperative.test(previous);
-    const defensiveContext = defensive.test(line) && !imperativeContext;
+    const defensiveContext = (defensive.test(line) || explanatory.test(line)) && !imperativeContext;
 
-    if (hasRemoteExecution && (inCommandContext || imperativeContext)) {
-      findings.push(finding(lineNumber, 'AGENT-REMOTE-EXEC', inCommandContext ? 'shell-command' : 'imperative', line));
+    if (hasRemoteExecution && !defensiveContext) {
+      findings.push(finding(lineNumber, 'AGENT-REMOTE-EXEC', inCommandContext ? 'shell-command' : imperativeContext ? 'imperative' : 'command-like', line));
       continue;
     }
 
@@ -96,9 +97,7 @@ export async function auditRepository(baseDir = root) {
     const path = relative(baseDir, full).replaceAll('\\', '/');
     if (!agentFile.test(path)) continue;
     const text = await readFile(full, 'utf8');
-    for (const item of auditText(text)) {
-      findings.push({ path, ...item });
-    }
+    for (const item of auditText(text)) findings.push({ path, ...item });
   }
   return findings;
 }
@@ -116,6 +115,4 @@ async function main() {
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  await main();
-}
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) await main();
