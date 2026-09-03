@@ -8,10 +8,11 @@ const textFile = /\.(md|mdx|txt|yml|yaml|json|toml|ini|cfg|sh|bash|ps1)$/i;
 const agentFile = /(^|\/)(AGENTS\.md|CLAUDE\.md|GEMINI\.md|llms\.txt|llms-full\.txt)$/i;
 const shellFence = /^(?:bash|sh|shell|zsh|fish|powershell|pwsh|ps|cmd)$/i;
 const command = /^(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
-const commandAnywhere = /(?:^|[\s`$#])(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
+const inlineCommand = /`\s*(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b[^`]*`/i;
+const promptCommand = /^(?:[$#]\s+)?(?:npm\s+(?:install|i|exec)|npx(?:\s|$)|pnpm\s+(?:add|install|dlx)|yarn\s+(?:add|install|dlx)|pip(?:3)?\s+install|pipx\s+install)\b/i;
 const remoteExecution = /(?:\b(?:curl|wget)\b[^\n|]*\|\s*(?:sh|bash|zsh|fish)|\beval\s+["'`]\s*\$\(\s*(?:curl|wget)\b[^\n)]*\)\s*["'`])/i;
 const imperative = /\b(?:run|execute|install|copy\s+and\s+paste|before\s+continuing|required\s+command|automatically\s+install|execute\s+the\s+following|run\s+this\s+command)\b/i;
-const defensive = /\b(?:never\s+execute|do\s+not\s+(?:run|execute|install)|must\s+not|prohibited|blocked\s+pattern|forbidden|require\s+human\s+approval|requiring\s+independent\s+verification)\b/i;
+const defensive = /\b(?:never\s+execute|do\s+not\s+(?:run|execute|install)|must\s+not|prohibited|blocked\s+patterns?|forbidden|require\s+human\s+approval|requiring\s+independent\s+verification)\b/i;
 const explanatory = /\b(?:security\s+(?:documentation|guidance|policy)|(?:dangerous|risk|threat|attack|malicious|unsafe))\b/i;
 const suspiciousUnicode = /[\u202A-\u202E\u2066-\u2069\u200B-\u200D\uFEFF]/;
 
@@ -50,30 +51,45 @@ export function auditText(text) {
       continue;
     }
 
+    if (inFence && !shellLikeFence) continue;
+
     const previous = lines[index - 1]?.trim() ?? '';
-    const inCommandContext = shellLikeFence || /^[$#]\s+/.test(trimmed) || command.test(trimmed);
-    const hasCommand = commandAnywhere.test(line);
+    const hasCommand = command.test(trimmed);
+    const hasInlineCommand = inlineCommand.test(line);
+    const hasPromptCommand = promptCommand.test(trimmed);
     const hasRemoteExecution = remoteExecution.test(line);
     const imperativeContext = imperative.test(line) || imperative.test(previous);
-    const defensiveContext = (defensive.test(line) || explanatory.test(line)) && !imperativeContext;
+    const defensiveContext = defensive.test(line) || explanatory.test(line);
+    const commandLike = shellLikeFence || (!inFence && (hasPromptCommand || hasInlineCommand || hasCommand));
+    const actionableImperative = /(?:\brun\b|\bexecute\b|\binstall\b|copy\s+and\s+paste|automatically\s+install|required\s+command|execute\s+the\s+following|run\s+this\s+command)/i.test(line) || /(?:\brun\b|\bexecute\b|\binstall\b|copy\s+and\s+paste|automatically\s+install|required\s+command|execute\s+the\s+following|run\s+this\s+command)/i.test(previous);
+
+    if (shellLikeFence && hasRemoteExecution) {
+      findings.push(finding(lineNumber, 'AGENT-REMOTE-EXEC', 'shell-fence', line));
+      continue;
+    }
+
+    if (shellLikeFence && hasCommand) {
+      findings.push(finding(lineNumber, 'AGENT-PACKAGE-COMMAND', 'shell-fence', line));
+      continue;
+    }
 
     if (hasRemoteExecution && !defensiveContext) {
-      findings.push(finding(lineNumber, 'AGENT-REMOTE-EXEC', inCommandContext ? 'shell-command' : imperativeContext ? 'imperative' : 'command-like', line));
+      findings.push(finding(lineNumber, 'AGENT-REMOTE-EXEC', imperativeContext ? 'imperative' : 'command-like', line));
       continue;
     }
 
-    if (hasCommand && inCommandContext) {
-      findings.push(finding(lineNumber, 'AGENT-PACKAGE-COMMAND', shellLikeFence ? 'shell-fence' : 'command-position', line));
+    if (commandLike && !defensiveContext) {
+      findings.push(finding(lineNumber, 'AGENT-PACKAGE-COMMAND', hasPromptCommand ? 'command-position' : imperativeContext ? 'imperative' : 'inline-command', line));
       continue;
     }
 
-    if (hasCommand && imperativeContext && !defensiveContext) {
+    if (actionableImperative && !defensiveContext && (hasCommand || hasInlineCommand || hasPromptCommand)) {
       findings.push(finding(lineNumber, 'AGENT-PACKAGE-COMMAND', 'imperative', line));
       continue;
     }
 
-    if ((hasCommand || hasRemoteExecution) && trimmed && !defensiveContext && /(?:^|\s)(?:\$|#)\s*/.test(trimmed)) {
-      findings.push(finding(lineNumber, hasRemoteExecution ? 'AGENT-REMOTE-EXEC' : 'AGENT-PACKAGE-COMMAND', 'ambiguous-command', line));
+    if (actionableImperative && !defensiveContext && !hasCommand && !hasInlineCommand && !hasPromptCommand && /\b(?:package|tool|dependency|utility)\b/i.test(line)) {
+      findings.push(finding(lineNumber, 'AGENT-PACKAGE-COMMAND', 'imperative', line));
     }
   }
 
