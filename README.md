@@ -28,3 +28,18 @@ Do not commit secrets or private evidence.
 ## Deployment truth
 
 The project is not considered production-ready merely because the source builds. Production status requires successful tests, production build, appropriate environment configuration, deployment, and runtime verification.
+
+
+## Canonical Evidence-First Record Workflow
+
+The authenticated `/record` workspace provides the private Question → Source → Evidence → Claim → Finding → Unknown workflow. Records are private by default and ownership is enforced server-side.
+
+### Local setup
+
+1. Install Node.js and pnpm 10.
+2. Copy `.env.example` to a local environment file and provide the required OAuth, database, and storage configuration.
+3. Ensure `DATABASE_URL` points to a MySQL-compatible database.
+4. Run migrations with `pnpm db:push` for local development; production changes should be applied through the checked-in Drizzle migrations rather than schema push.
+5. Run `pnpm check`, `pnpm test`, and `pnpm build`.
+
+Claims remain assertions. Evidence points to a source and locator. Findings explicitly declare an epistemic category; FACT requires supporting evidence. Unknowns remain visible instead of being converted into conclusions.

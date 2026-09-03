@@ -59,3 +59,10 @@ The existing case/source/evidence/chronology structures are foundations for this
 ## Acceptance gate before production
 
 A Priority 1 release should not be called complete until authentication, ownership isolation, provenance, audit history, build/tests, secret scanning, and intentional publication controls have been verified from code and runtime—not inferred from UI labels or dashboards.
+
+
+## Implementation Pass 1 Status
+
+Complete on the feature branch: canonical private Record metadata, source-backed evidence, claims, findings, unknowns, normalized traceability links, server-enforced ownership checks, FACT-with-evidence validation, and canonical audit events.
+
+Next implementation pass: provenance/versioning, timeline integration, entity relationships, and deliberate public publishing.

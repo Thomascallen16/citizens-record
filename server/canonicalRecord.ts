@@ -22,6 +22,7 @@ import {
 import { caseMembers, legalCases, sourceExcerpts, sourceRecords, chronologyEvents } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
+import { canonicalAuditEvents } from "../drizzle/canonicalAudit";
 
 const recordId = z.object({ recordId: z.number().int().positive() });
 const sourceId = z.object({ sourceRecordId: z.number().int().positive() });
@@ -67,7 +68,7 @@ async function ownedClaimIds(userId: number, caseId: number, ids: number[]) {
 
 async function audit(userId: number, caseId: number, entityType: string, entityId: number, action: string, summary: string, before?: unknown, after?: unknown) {
   const db = await dbOrThrow();
-  await db.insert((await import("../drizzle/canonical")).canonicalAuditEvents).values({
+  await db.insert(canonicalAuditEvents).values({
     userId, caseId, actorUserId: userId, entityType, entityId, action: action as any,
     summary: summary.slice(0, 500), beforeJson: before == null ? null : JSON.stringify(before).slice(0, 10000), afterJson: after == null ? null : JSON.stringify(after).slice(0, 10000),
   });
@@ -190,6 +191,13 @@ export const canonicalRouter = router({
       for (const claim of input.claimIds) await db.insert(findingClaimLinks).values({ findingId: id, claimId: claim }).onDuplicateKeyUpdate({ set: { claimId: claim } });
       await audit(ctx.user.id, input.recordId, "finding", id, "CREATED", "Finding created with explicit epistemic category.", null, input);
       return { id };
+    }),
+  }),
+  audit: router({
+    list: protectedProcedure.input(recordId).query(async ({ ctx, input }) => {
+      await ownedCase(ctx.user.id, input.recordId);
+      const db = await dbOrThrow();
+      return db.select().from(canonicalAuditEvents).where(and(eq(canonicalAuditEvents.caseId, input.recordId), eq(canonicalAuditEvents.userId, ctx.user.id))).orderBy(desc(canonicalAuditEvents.occurredAt));
     }),
   }),
   unknowns: router({
