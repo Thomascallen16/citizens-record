@@ -59,3 +59,11 @@ The existing case/source/evidence/chronology structures are foundations for this
 ## Acceptance gate before production
 
 A Priority 1 release should not be called complete until authentication, ownership isolation, provenance, audit history, build/tests, secret scanning, and intentional publication controls have been verified from code and runtime—not inferred from UI labels or dashboards.
+
+## Implementation Pass 1 Status
+
+Implemented on the feature branch: canonical private Record metadata, source-backed evidence, claims, findings, unknowns, normalized traceability links, server-enforced ownership checks, FACT-with-evidence validation, canonical audit events, and an authenticated `/record` workspace.
+
+Next implementation pass: provenance/versioning, timeline integration, entity relationships, and deliberate public publishing.
+
+**Verification note:** GitHub's pull-request workflows for the branch are currently reporting `action_required`, so this environment cannot truthfully report a completed CI/test/build run for the final branch head yet. Earlier CI did execute and caught a TypeScript `Set` iteration issue; that issue was corrected before the current head. No deployment was performed.

@@ -62,6 +62,7 @@ import { getStripeClient } from "./stripe";
 import { COOKIE_NAME } from "../shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { canonicalRouter } from "./canonicalRecord";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { PRIVACY_NOTICE_VERSION } from "../shared/workspacePolicies";
 
@@ -108,6 +109,7 @@ async function requireOwnedSource(userId: number, caseId: number, sourceRecordId
 
 export const appRouter = router({
   system: systemRouter,
+  canonical: canonicalRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -79,3 +79,10 @@ Private records default to authenticated, server-authorized access. Public publi
 ## Legal boundary
 
 The application is organization and research software. It does not provide legal advice, legal representation, filing automation, service, or a substitute for independent legal judgment.
+
+
+## Implementation Pass 1 — Canonical Record Workflow
+
+Implemented on feature/canonical-record-workflow: the existing `legal_cases` table remains the storage-compatible case/workspace anchor while `record_metadata` supplies the user-facing Record title, context, verbatim original question, lifecycle status, and private visibility. Existing `source_records` and `source_excerpts` are reused for sources and source-backed evidence, with small canonical metadata extensions. Claims, findings, unknowns, normalized evidence/source/claim/finding links, and canonical audit events are additive models.
+
+The canonical epistemic vocabulary is FACT, AUTHORITY, CLAIM, INFERENCE, CONTRADICTION, QUESTION, UNKNOWN. Existing confidence values remain separate reliability/verification markers and are never treated as epistemic categories.

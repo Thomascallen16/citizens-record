@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import CivicScriptStudio from "./pages/CivicScriptStudio";
 import CivicVoices from "./pages/CivicVoices";
 import Home from "./pages/Home";
+import RecordWorkspace from "./pages/RecordWorkspace";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/script-studio"} component={CivicScriptStudio} />
       <Route path={"/civic-voices"} component={CivicVoices} />
+      <Route path={"/record"} component={RecordWorkspace} />
       <Route path={"/"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

@@ -65,3 +65,10 @@
 **Decision:** This pass is documentation-only foundation work. No feature code, database schema, hosting, or production configuration is changed.
 
 **Reason:** Establish a forensic baseline before implementation so later changes can be attributed and audited.
+
+
+## Implementation Pass 1 Compatibility Note
+
+Retained: `legal_cases`, `case_members`, `source_records`, `source_excerpts`, `evidence_items`, `chronology_events`, `citations`, and the existing revision/audit foundation. Extended through additive canonical metadata/link tables rather than replacing existing records.
+
+The user-facing term is Record; `legal_cases` remains the compatible storage anchor. New records create both the legacy case row and canonical `record_metadata`. Existing cases continue to load through a legacy fallback when canonical metadata is absent. Existing confidence values (`PRIMARY-RECORD`, `USER-REPORTED`, `VERIFY`, `SOURCE-UNAVAILABLE`, `CONFLICTING`) remain distinct from epistemic category.
