@@ -10,7 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { Loader2, LockKeyhole, Plus, SearchCheck, CircleHelp, FileText, Link2, Lightbulb, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
-const tabs = ["Overview", "Question", "Sources", "Evidence", "Claims", "Findings", "Unknowns"] as const;
+const tabs = ["Overview", "Question", "Sources", "Evidence", "Claims", "Findings", "Unknowns", "Activity"] as const;
 type Tab = typeof tabs[number];
 const definitions: Record<string, string> = {
   FACT: "Directly established by the linked source-backed evidence in this record.",
@@ -43,6 +43,7 @@ export default function RecordWorkspace() {
   const claims = trpc.canonical.claims.list.useQuery({ recordId: selectedId ?? 0 }, { enabled: Boolean(selectedId && isAuthenticated) });
   const findings = trpc.canonical.findings.list.useQuery({ recordId: selectedId ?? 0 }, { enabled: Boolean(selectedId && isAuthenticated) });
   const unknowns = trpc.canonical.unknowns.list.useQuery({ recordId: selectedId ?? 0 }, { enabled: Boolean(selectedId && isAuthenticated) });
+  const audit = trpc.canonical.audit.list.useQuery({ recordId: selectedId ?? 0 }, { enabled: Boolean(selectedId && isAuthenticated) });
 
   const createRecord = trpc.canonical.records.create.useMutation({ onSuccess: async ({ id }) => { await utils.canonical.records.list.invalidate(); setRecordId(id); setShowCreateRecord(false); setTab("Question"); toast.success("Private record created."); } });
   const createSource = trpc.canonical.sources.create.useMutation({ onSuccess: async () => { await sources.refetch(); setShowCreateSource(false); setTab("Evidence"); toast.success("Source saved."); } });
@@ -80,6 +81,8 @@ export default function RecordWorkspace() {
           {tab === "Claims" && <ListSection title="Claims" action="Add claim" onAction={() => setShowCreateClaim(true)} icon={<Link2 className="h-4 w-4" />}><div className="space-y-3">{selectedClaims.map(item => <Card key={item.id}><CardContent className="p-4"><div className="flex justify-between gap-3"><p className="font-semibold">{item.claimText}</p><Category value="CLAIM" /></div><p className="mt-2 text-sm text-stone-600">{item.claimant ? `Attributed to ${item.claimant}. ` : "Attribution not recorded. "}{item.notes}</p></CardContent></Card>)}{!selectedClaims.length && <Empty text="A claim is an assertion. Enter it without upgrading it to fact." />}</div></ListSection>}
 
           {tab === "Findings" && <ListSection title="Findings" action="Add finding" onAction={() => setShowCreateFinding(true)} icon={<Lightbulb className="h-4 w-4" />}><div className="space-y-3">{selectedFindings.map(item => <Card key={item.id}><CardContent className="p-4"><div className="flex flex-wrap justify-between gap-3"><p className="font-semibold">{item.findingText}</p><Category value={item.epistemicCategory} /></div><p className="mt-3 text-sm"><strong>Rationale:</strong> {item.rationale}</p>{item.missingEvidence && <p className="mt-2 text-sm text-stone-600"><strong>Missing evidence:</strong> {item.missingEvidence}</p>}<p className="mt-2 text-xs text-stone-500">{item.epistemicCategory === "FACT" ? "FACT requires linked supporting evidence." : "Inference remains an interpretation, not a direct fact."}</p></CardContent></Card>)}{!selectedFindings.length && <Empty text="A finding states what the linked record supports. Choose FACT only when source-backed evidence is linked." />}</div></ListSection>}
+
+          {tab === "Activity" && <ListSection title="Activity / Audit History" action="" onAction={() => undefined} icon={<CircleHelp className="h-4 w-4" />}><div className="space-y-2">{(audit.data ?? []).map(item => <div key={item.id} className="rounded-lg border bg-white p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{item.action}</strong><span className="text-xs text-stone-500">{item.entityType} #{item.entityId} · {new Date(item.occurredAt).toLocaleString()}</span></div><p className="mt-1 text-stone-600">{item.summary}</p></div>)}{!audit.data?.length && <Empty text="No canonical audit events yet." />}</div></ListSection>}
 
           {tab === "Unknowns" && <ListSection title="Unknowns / unresolved questions" action="Add unknown" onAction={() => setShowCreateUnknown(true)} icon={<CircleHelp className="h-4 w-4" />}><div className="space-y-3">{selectedUnknowns.map(item => <Card key={item.id}><CardContent className="p-4"><div className="flex justify-between gap-3"><p className="font-semibold">{item.description}</p><Badge variant="outline">{item.status}</Badge></div><p className="mt-2 text-sm text-stone-600">Why it matters: {item.whyItMatters}</p>{item.resolutionNotes && <p className="mt-2 text-sm">Resolution: {item.resolutionNotes}</p>}</CardContent></Card>)}{!selectedUnknowns.length && <Empty text="Unknowns are deliberately preserved gaps. Adding a finding does not erase them." />}</div></ListSection>}
         </>}</section>

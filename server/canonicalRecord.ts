@@ -23,6 +23,7 @@ import { caseMembers, legalCases, sourceExcerpts, sourceRecords, chronologyEvent
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
 import { canonicalAuditEvents } from "../drizzle/canonicalAudit";
+import { assertFindingSavePolicy } from "./canonicalPolicy";
 
 const recordId = z.object({ recordId: z.number().int().positive() });
 const sourceId = z.object({ sourceRecordId: z.number().int().positive() });
@@ -159,8 +160,8 @@ export const canonicalRouter = router({
     list: protectedProcedure.input(recordId).query(async ({ ctx, input }) => { await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow(); return db.select().from(canonicalClaims).where(and(eq(canonicalClaims.caseId, input.recordId), eq(canonicalClaims.userId, ctx.user.id))).orderBy(desc(canonicalClaims.updatedAt)); }),
     create: protectedProcedure.input(recordId.extend({ claimText: z.string().min(1).max(20000), claimant: z.string().max(255).nullable(), claimDate: z.string().max(160).nullable(), claimType: z.string().trim().min(1).max(120), notes: z.string().max(10000).default(""), supportingEvidenceIds: z.array(z.number().int().positive()).default([]), contraryEvidenceIds: z.array(z.number().int().positive()).default([]), sourceRecordIds: z.array(z.number().int().positive()).default([]) })).mutation(async ({ ctx, input }) => {
       await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow();
-      const allEvidence = [...new Set([...input.supportingEvidenceIds, ...input.contraryEvidenceIds])]; await ownedEvidence(ctx.user.id, input.recordId, allEvidence);
-      const sourceIds = [...new Set(input.sourceRecordIds)]; for (const id of sourceIds) await ownedSource(ctx.user.id, input.recordId, id);
+      const allEvidence = Array.from(new Set([...input.supportingEvidenceIds, ...input.contraryEvidenceIds])); await ownedEvidence(ctx.user.id, input.recordId, allEvidence);
+      const sourceIds = Array.from(new Set(input.sourceRecordIds)); for (const id of sourceIds) await ownedSource(ctx.user.id, input.recordId, id);
       const result = await db.insert(canonicalClaims).values({ caseId: input.recordId, userId: ctx.user.id, claimText: input.claimText, claimant: input.claimant, claimDate: input.claimDate, claimType: input.claimType, epistemicCategory: "CLAIM", notes: input.notes });
       const id = Number(result[0].insertId);
       for (const evidence of input.supportingEvidenceIds) await db.insert(claimEvidenceLinks).values({ claimId: id, evidenceId: evidence, relationship: "SUPPORTING" }).onDuplicateKeyUpdate({ set: { relationship: "SUPPORTING" } });
@@ -182,8 +183,8 @@ export const canonicalRouter = router({
     }),
     create: protectedProcedure.input(recordId.extend({ findingText: z.string().min(1).max(20000), epistemicCategory: epistemic, rationale: z.string().min(1).max(20000), confidenceExplanation: z.string().max(10000).default(""), alternativeExplanation: z.string().max(10000).default(""), missingEvidence: z.string().max(10000).default(""), whatWouldChangeConclusion: z.string().max(10000).default(""), supportingEvidenceIds: z.array(z.number().int().positive()).default([]), contraryEvidenceIds: z.array(z.number().int().positive()).default([]), claimIds: z.array(z.number().int().positive()).default([]) })).mutation(async ({ ctx, input }) => {
       await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow();
-      const allEvidence = [...new Set([...input.supportingEvidenceIds, ...input.contraryEvidenceIds])]; await ownedEvidence(ctx.user.id, input.recordId, allEvidence); await ownedClaimIds(ctx.user.id, input.recordId, input.claimIds);
-      if (input.epistemicCategory === "FACT" && input.supportingEvidenceIds.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "A FACT finding requires at least one linked source-backed supporting evidence item." });
+      const allEvidence = Array.from(new Set([...input.supportingEvidenceIds, ...input.contraryEvidenceIds])); await ownedEvidence(ctx.user.id, input.recordId, allEvidence); await ownedClaimIds(ctx.user.id, input.recordId, input.claimIds);
+      try { assertFindingSavePolicy(input.epistemicCategory, input.supportingEvidenceIds.length); } catch (error) { throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Invalid finding policy." }); }
       const result = await db.insert(canonicalFindings).values({ caseId: input.recordId, userId: ctx.user.id, findingText: input.findingText, epistemicCategory: input.epistemicCategory, rationale: input.rationale, confidenceExplanation: input.confidenceExplanation, alternativeExplanation: input.alternativeExplanation, missingEvidence: input.missingEvidence, whatWouldChangeConclusion: input.whatWouldChangeConclusion });
       const id = Number(result[0].insertId);
       for (const evidence of input.supportingEvidenceIds) await db.insert(findingEvidenceLinks).values({ findingId: id, evidenceId: evidence, relationship: "SUPPORTING" }).onDuplicateKeyUpdate({ set: { relationship: "SUPPORTING" } });
