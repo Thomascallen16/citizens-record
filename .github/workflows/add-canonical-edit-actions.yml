@@ -1,0 +1,43 @@
+name: One-time canonical edit integration
+on:
+  push:
+    branches: [feature/canonical-record-workflow]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Apply edits
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('server/canonicalRecord.ts'); s=p.read_text()
+          source_marker='''    create: protectedProcedure.input(recordId.extend({ title: z.string().trim().min(1).max(255), sourceType: z.string().trim().min(1).max(120), location: z.string().trim().min(1).max(2000), publisher: z.string().trim().max(255).default(""), publicationDate: z.string().trim().max(160).nullable(), retrievalAt: z.string().datetime().nullable(), designation: z.enum(sourceDesignations), citationText: z.string().max(10000).default(""), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {'''
+          update_source='''    update: protectedProcedure.input(recordId.extend({ sourceRecordId: z.number().int().positive(), title: z.string().trim().min(1).max(255), sourceType: z.string().trim().min(1).max(120), location: z.string().trim().min(1).max(2000), publisher: z.string().trim().max(255).default(""), publicationDate: z.string().trim().max(160).nullable(), designation: z.enum(sourceDesignations), citationText: z.string().max(10000).default(""), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {\n      await ownedSource(ctx.user.id, input.recordId, input.sourceRecordId); const db = await dbOrThrow();\n      await db.update(sourceRecords).set({ title: input.title, recordType: input.sourceType, origin: input.publisher || "Unknown", location: input.location, documentDate: input.publicationDate, provenanceNote: input.notes || input.citationText || "Source metadata entered by owner." }).where(and(eq(sourceRecords.id, input.sourceRecordId), eq(sourceRecords.caseId, input.recordId), eq(sourceRecords.userId, ctx.user.id)));\n      await db.update(canonicalSourceMetadata).set({ designation: input.designation, citationText: input.citationText, notes: input.notes }).where(and(eq(canonicalSourceMetadata.sourceRecordId, input.sourceRecordId), eq(canonicalSourceMetadata.caseId, input.recordId), eq(canonicalSourceMetadata.userId, ctx.user.id)));\n      await audit(ctx.user.id, input.recordId, "source", input.sourceRecordId, "UPDATED", "Source metadata updated.", null, input); return { success: true };\n    }),\n'''
+          if '    update: protectedProcedure.input(recordId.extend({ sourceRecordId:' not in s: s=s.replace(source_marker, update_source+source_marker)
+          evidence_marker='''    create: protectedProcedure.input(recordId.extend({ sourceRecordId: z.number().int().positive(), title: z.string().trim().min(1).max(255), excerpt: z.string().min(1).max(20000), locator: z.string().max(1000).nullable(), confidenceStatus: z.enum(["PRIMARY-RECORD", "USER-REPORTED", "VERIFY", "SOURCE-UNAVAILABLE", "CONFLICTING"]), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {'''
+          update_evidence='''    update: protectedProcedure.input(recordId.extend({ evidenceId: z.number().int().positive(), title: z.string().trim().min(1).max(255), excerpt: z.string().min(1).max(20000), locator: z.string().max(255).nullable(), confidenceStatus: z.enum(["PRIMARY-RECORD", "USER-REPORTED", "VERIFY", "SOURCE-UNAVAILABLE", "CONFLICTING"]), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {\n      await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow();\n      const existing = (await db.select().from(sourceExcerpts).where(and(eq(sourceExcerpts.id, input.evidenceId), eq(sourceExcerpts.caseId, input.recordId), eq(sourceExcerpts.userId, ctx.user.id), isNull(sourceExcerpts.deletedAt))).limit(1))[0]; if (!existing || !existing.sourceRecordId) throw new TRPCError({ code: "NOT_FOUND", message: "Evidence not found" });\n      await db.update(sourceExcerpts).set({ label: input.title, excerptText: input.excerpt, locator: input.locator, confidenceStatus: input.confidenceStatus }).where(eq(sourceExcerpts.id, input.evidenceId));\n      await db.update(canonicalEvidenceMetadata).set({ notes: input.notes }).where(and(eq(canonicalEvidenceMetadata.evidenceId, input.evidenceId), eq(canonicalEvidenceMetadata.caseId, input.recordId), eq(canonicalEvidenceMetadata.userId, ctx.user.id)));\n      await audit(ctx.user.id, input.recordId, "evidence", input.evidenceId, "UPDATED", "Source-backed evidence updated.", existing, input); return { success: true };\n    }),\n'''
+          if '    update: protectedProcedure.input(recordId.extend({ evidenceId:' not in s: s=s.replace(evidence_marker, update_evidence+evidence_marker)
+          p.write_text(s)
+
+          p=Path('client/src/pages/RecordWorkspace.tsx'); s=p.read_text()
+          if 'const updateSource = trpc.canonical.sources.update.useMutation' not in s:
+              s=s.replace('const createSource = trpc.canonical.sources.create.useMutation({', 'const updateSource = trpc.canonical.sources.update.useMutation({ onSuccess: async () => { await sources.refetch(); toast.success("Source updated."); } });\n  const updateEvidence = trpc.canonical.evidence.update.useMutation({ onSuccess: async () => { await evidence.refetch(); toast.success("Evidence updated."); } });\n  const createSource = trpc.canonical.sources.create.useMutation({')
+          source_button='<Button size="sm" variant="outline" onClick={() => { const title = window.prompt("Source title", source.title); if (title) updateSource.mutate({ recordId: selectedId, sourceRecordId: source.id, title, sourceType: source.recordType, location: source.location, publisher: source.origin, publicationDate: source.documentDate, designation: source.canonical?.designation ?? "UNKNOWN", citationText: source.canonical?.citationText ?? "", notes: source.canonical?.notes ?? "" }); }}>Edit</Button>'
+          s=s.replace('<Badge variant="outline">{source.canonical?.designation ?? "UNKNOWN"}</Badge>', '<div className="flex items-center gap-2">'+source_button+'<Badge variant="outline">{source.canonical?.designation ?? "UNKNOWN"}</Badge></div>')
+          evidence_button='<Button size="sm" variant="outline" onClick={() => { const excerpt = window.prompt("Evidence excerpt", item.excerptText); if (excerpt) updateEvidence.mutate({ recordId: selectedId, evidenceId: item.id, title: item.label, excerpt, locator: item.locator, confidenceStatus: item.confidenceStatus, notes: item.notes }); }}>Edit</Button>'
+          s=s.replace('<Badge variant="outline">{item.confidenceStatus}</Badge>', '<div className="flex items-center gap-2">'+evidence_button+'<Badge variant="outline">{item.confidenceStatus}</Badge></div>')
+          p.write_text(s)
+
+          Path('.github/workflows/add-canonical-edit-actions.yml').unlink()
+          PY
+      - name: Commit edits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "feat: add source and evidence editing"
+          git push
