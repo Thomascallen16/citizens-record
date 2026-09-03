@@ -58,7 +58,8 @@ export function auditText(text) {
     const hasInlineCommand = inlineCommand.test(line);
     const hasPromptCommand = promptCommand.test(trimmed);
     const hasRemoteExecution = remoteExecution.test(line);
-    const imperativeContext = imperative.test(line) || imperative.test(previous);
+    const previousIsDefensive = defensive.test(previous) || explanatory.test(previous);
+    const imperativeContext = imperative.test(line) || (imperative.test(previous) && !previousIsDefensive);
     const defensiveContext = defensive.test(line) || explanatory.test(line);
     const commandLike = shellLikeFence || (!inFence && (hasPromptCommand || hasInlineCommand || hasCommand));
     const actionableImperative = /(?:\brun\b|\bexecute\b|\binstall\b|copy\s+and\s+paste|automatically\s+install|required\s+command|execute\s+the\s+following|run\s+this\s+command)/i.test(line) || /(?:\brun\b|\bexecute\b|\binstall\b|copy\s+and\s+paste|automatically\s+install|required\s+command|execute\s+the\s+following|run\s+this\s+command)/i.test(previous);
