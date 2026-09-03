@@ -1,4 +1,3 @@
-import type { z } from "zod";
 import type { epistemicCategories } from "../drizzle/canonical";
 
 export type EpistemicCategory = typeof epistemicCategories[number];
