@@ -125,6 +125,12 @@ export const canonicalRouter = router({
       const meta = ids.length ? await db.select().from(canonicalSourceMetadata).where(inArray(canonicalSourceMetadata.sourceRecordId, ids)) : [];
       return rows.map(row => ({ ...row, canonical: meta.find(item => item.sourceRecordId === row.id) ?? null }));
     }),
+    update: protectedProcedure.input(recordId.extend({ sourceRecordId: z.number().int().positive(), title: z.string().trim().min(1).max(255), sourceType: z.string().trim().min(1).max(120), location: z.string().trim().min(1).max(2000), publisher: z.string().trim().max(255).default(""), publicationDate: z.string().trim().max(160).nullable(), designation: z.enum(sourceDesignations), citationText: z.string().max(10000).default(""), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {
+      await ownedSource(ctx.user.id, input.recordId, input.sourceRecordId); const db = await dbOrThrow();
+      await db.update(sourceRecords).set({ title: input.title, recordType: input.sourceType, origin: input.publisher || "Unknown", location: input.location, documentDate: input.publicationDate, provenanceNote: input.notes || input.citationText || "Source metadata entered by owner." }).where(and(eq(sourceRecords.id, input.sourceRecordId), eq(sourceRecords.caseId, input.recordId), eq(sourceRecords.userId, ctx.user.id)));
+      await db.update(canonicalSourceMetadata).set({ designation: input.designation, citationText: input.citationText, notes: input.notes }).where(and(eq(canonicalSourceMetadata.sourceRecordId, input.sourceRecordId), eq(canonicalSourceMetadata.caseId, input.recordId), eq(canonicalSourceMetadata.userId, ctx.user.id)));
+      await audit(ctx.user.id, input.recordId, "source", input.sourceRecordId, "UPDATED", "Source metadata updated.", null, input); return { success: true };
+    }),
     create: protectedProcedure.input(recordId.extend({ title: z.string().trim().min(1).max(255), sourceType: z.string().trim().min(1).max(120), location: z.string().trim().min(1).max(2000), publisher: z.string().trim().max(255).default(""), publicationDate: z.string().trim().max(160).nullable(), retrievalAt: z.string().datetime().nullable(), designation: z.enum(sourceDesignations), citationText: z.string().max(10000).default(""), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {
       await ownedCase(ctx.user.id, input.recordId);
       const db = await dbOrThrow();
@@ -144,6 +150,13 @@ export const canonicalRouter = router({
       const ids = rows.map(row => row.id);
       const meta = ids.length ? await db.select().from(canonicalEvidenceMetadata).where(inArray(canonicalEvidenceMetadata.evidenceId, ids)) : [];
       return rows.filter(row => row.sourceRecordId).map(row => ({ ...row, notes: meta.find(item => item.evidenceId === row.id)?.notes ?? "" }));
+    }),
+    update: protectedProcedure.input(recordId.extend({ evidenceId: z.number().int().positive(), title: z.string().trim().min(1).max(255), excerpt: z.string().min(1).max(20000), locator: z.string().max(255).nullable(), confidenceStatus: z.enum(["PRIMARY-RECORD", "USER-REPORTED", "VERIFY", "SOURCE-UNAVAILABLE", "CONFLICTING"]), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {
+      await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow();
+      const existing = (await db.select().from(sourceExcerpts).where(and(eq(sourceExcerpts.id, input.evidenceId), eq(sourceExcerpts.caseId, input.recordId), eq(sourceExcerpts.userId, ctx.user.id), isNull(sourceExcerpts.deletedAt))).limit(1))[0]; if (!existing || !existing.sourceRecordId) throw new TRPCError({ code: "NOT_FOUND", message: "Evidence not found" });
+      await db.update(sourceExcerpts).set({ label: input.title, excerptText: input.excerpt, locator: input.locator, confidenceStatus: input.confidenceStatus }).where(eq(sourceExcerpts.id, input.evidenceId));
+      await db.update(canonicalEvidenceMetadata).set({ notes: input.notes }).where(and(eq(canonicalEvidenceMetadata.evidenceId, input.evidenceId), eq(canonicalEvidenceMetadata.caseId, input.recordId), eq(canonicalEvidenceMetadata.userId, ctx.user.id)));
+      await audit(ctx.user.id, input.recordId, "evidence", input.evidenceId, "UPDATED", "Source-backed evidence updated.", existing, input); return { success: true };
     }),
     create: protectedProcedure.input(recordId.extend({ sourceRecordId: z.number().int().positive(), title: z.string().trim().min(1).max(255), excerpt: z.string().min(1).max(20000), locator: z.string().max(1000).nullable(), confidenceStatus: z.enum(["PRIMARY-RECORD", "USER-REPORTED", "VERIFY", "SOURCE-UNAVAILABLE", "CONFLICTING"]), notes: z.string().max(10000).default("") })).mutation(async ({ ctx, input }) => {
       await ownedCase(ctx.user.id, input.recordId);
