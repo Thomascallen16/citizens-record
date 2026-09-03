@@ -13,7 +13,6 @@ CREATE TABLE `record_metadata` (
   CONSTRAINT `record_metadata_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `record_metadata_owner_idx` ON `record_metadata` (`userId`);
-
 CREATE TABLE `canonical_source_metadata` (
   `id` int AUTO_INCREMENT NOT NULL,
   `sourceRecordId` int NOT NULL,
@@ -30,7 +29,6 @@ CREATE TABLE `canonical_source_metadata` (
   CONSTRAINT `canonical_source_metadata_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `canonical_source_metadata_owner_case_idx` ON `canonical_source_metadata` (`userId`,`caseId`);
-
 CREATE TABLE `canonical_evidence_metadata` (
   `id` int AUTO_INCREMENT NOT NULL,
   `evidenceId` int NOT NULL,
@@ -44,7 +42,6 @@ CREATE TABLE `canonical_evidence_metadata` (
   CONSTRAINT `canonical_evidence_metadata_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `canonical_evidence_metadata_owner_case_idx` ON `canonical_evidence_metadata` (`userId`,`caseId`);
-
 CREATE TABLE `canonical_claims` (
   `id` int AUTO_INCREMENT NOT NULL,
   `caseId` int NOT NULL,
@@ -60,7 +57,6 @@ CREATE TABLE `canonical_claims` (
   CONSTRAINT `canonical_claims_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `canonical_claims_owner_case_idx` ON `canonical_claims` (`userId`,`caseId`);
-
 CREATE TABLE `canonical_findings` (
   `id` int AUTO_INCREMENT NOT NULL,
   `caseId` int NOT NULL,
@@ -77,7 +73,6 @@ CREATE TABLE `canonical_findings` (
   CONSTRAINT `canonical_findings_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `canonical_findings_owner_case_idx` ON `canonical_findings` (`userId`,`caseId`);
-
 CREATE TABLE `canonical_unknowns` (
   `id` int AUTO_INCREMENT NOT NULL,
   `caseId` int NOT NULL,
@@ -95,7 +90,6 @@ CREATE TABLE `canonical_unknowns` (
   CONSTRAINT `canonical_unknowns_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE
 );
 CREATE INDEX `canonical_unknowns_owner_case_idx` ON `canonical_unknowns` (`userId`,`caseId`);
-
 CREATE TABLE `claim_evidence_links` (
   `id` int AUTO_INCREMENT NOT NULL,
   `claimId` int NOT NULL,
@@ -106,7 +100,6 @@ CREATE TABLE `claim_evidence_links` (
   CONSTRAINT `claim_evidence_links_claim_fk` FOREIGN KEY (`claimId`) REFERENCES `canonical_claims`(`id`) ON DELETE CASCADE,
   CONSTRAINT `claim_evidence_links_evidence_fk` FOREIGN KEY (`evidenceId`) REFERENCES `source_excerpts`(`id`) ON DELETE CASCADE
 );
-
 CREATE TABLE `claim_source_links` (
   `id` int AUTO_INCREMENT NOT NULL,
   `claimId` int NOT NULL,
@@ -116,7 +109,6 @@ CREATE TABLE `claim_source_links` (
   CONSTRAINT `claim_source_links_claim_fk` FOREIGN KEY (`claimId`) REFERENCES `canonical_claims`(`id`) ON DELETE CASCADE,
   CONSTRAINT `claim_source_links_source_fk` FOREIGN KEY (`sourceRecordId`) REFERENCES `source_records`(`id`) ON DELETE CASCADE
 );
-
 CREATE TABLE `finding_evidence_links` (
   `id` int AUTO_INCREMENT NOT NULL,
   `findingId` int NOT NULL,
@@ -127,7 +119,6 @@ CREATE TABLE `finding_evidence_links` (
   CONSTRAINT `finding_evidence_links_finding_fk` FOREIGN KEY (`findingId`) REFERENCES `canonical_findings`(`id`) ON DELETE CASCADE,
   CONSTRAINT `finding_evidence_links_evidence_fk` FOREIGN KEY (`evidenceId`) REFERENCES `source_excerpts`(`id`) ON DELETE CASCADE
 );
-
 CREATE TABLE `finding_claim_links` (
   `id` int AUTO_INCREMENT NOT NULL,
   `findingId` int NOT NULL,
@@ -137,3 +128,19 @@ CREATE TABLE `finding_claim_links` (
   CONSTRAINT `finding_claim_links_finding_fk` FOREIGN KEY (`findingId`) REFERENCES `canonical_findings`(`id`) ON DELETE CASCADE,
   CONSTRAINT `finding_claim_links_claim_fk` FOREIGN KEY (`claimId`) REFERENCES `canonical_claims`(`id`) ON DELETE CASCADE
 );
+CREATE TABLE `canonical_audit_events` (
+  `id` int AUTO_INCREMENT NOT NULL,
+  `userId` int NOT NULL,
+  `caseId` int NOT NULL,
+  `actorUserId` int NOT NULL,
+  `entityType` varchar(64) NOT NULL,
+  `entityId` int NOT NULL,
+  `action` enum('CREATED','UPDATED','ARCHIVED','LINKED','UNLINKED','STATUS_CHANGED') NOT NULL,
+  `summary` varchar(500) NOT NULL,
+  `beforeJson` text,
+  `afterJson` text,
+  `occurredAt` timestamp NOT NULL DEFAULT (now()),
+  CONSTRAINT `canonical_audit_events_owner_case_fk` FOREIGN KEY (`userId`,`caseId`) REFERENCES `legal_cases`(`userId`,`id`) ON DELETE CASCADE,
+  CONSTRAINT `canonical_audit_events_actor_fk` FOREIGN KEY (`actorUserId`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+CREATE INDEX `canonical_audit_events_owner_case_idx` ON `canonical_audit_events` (`userId`,`caseId`,`occurredAt`);
