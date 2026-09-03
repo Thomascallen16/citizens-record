@@ -53,12 +53,12 @@ async function walk(dir) {
   return findings;
 }
 
-const findings = await walk(root);
-if (findings.length) {
-  console.error('Agent supply-chain audit: REVIEW REQUIRED');
-  findings.forEach((x) => console.error(`- ${x}`));
-  process.exitCode = 1;
-} else console.log('Agent supply-chain audit: no high-risk installation commands found in AI-facing documentation.');
-
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (!invokedDirectly) process.exitCode = 0;
+if (invokedDirectly) {
+  const findings = await walk(root);
+  if (findings.length) {
+    console.error('Agent supply-chain audit: REVIEW REQUIRED');
+    findings.forEach((x) => console.error(`- ${x}`));
+    process.exitCode = 1;
+  } else console.log('Agent supply-chain audit: no high-risk installation commands found in AI-facing documentation.');
+}
