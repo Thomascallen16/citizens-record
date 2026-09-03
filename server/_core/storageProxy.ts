@@ -1,5 +1,42 @@
 import type { Express } from "express";
+import { and, eq, isNull } from "drizzle-orm";
+import { evidenceItems } from "../../drizzle/schema";
+import * as db from "../db";
 import { ENV } from "./env";
+import { sdk } from "./sdk";
+
+export type StorageAuthorizationLookup = (
+  userId: number,
+  key: string,
+) => Promise<boolean>;
+
+const lookupOwnedReadyStorageKey: StorageAuthorizationLookup = async (userId, key) => {
+  const database = await db.getDb();
+  if (!database) return false;
+
+  const rows = await database
+    .select({ id: evidenceItems.id })
+    .from(evidenceItems)
+    .where(
+      and(
+        eq(evidenceItems.userId, userId),
+        eq(evidenceItems.storageKey, key),
+        eq(evidenceItems.state, "READY"),
+        isNull(evidenceItems.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  return rows.length > 0;
+};
+
+export async function isStorageKeyAuthorized(
+  userId: number,
+  key: string,
+  lookup: StorageAuthorizationLookup = lookupOwnedReadyStorageKey,
+): Promise<boolean> {
+  return lookup(userId, key);
+}
 
 export function registerStorageProxy(app: Express) {
   app.get("/manus-storage/*", async (req, res) => {
@@ -15,6 +52,12 @@ export function registerStorageProxy(app: Express) {
     }
 
     try {
+      const user = await sdk.authenticateRequest(req);
+      if (user.isCron || !(await isStorageKeyAuthorized(user.id, key))) {
+        res.status(403).send("Forbidden");
+        return;
+      }
+
       const forgeUrl = new URL(
         "v1/storage/presign/get",
         ENV.forgeApiUrl.replace(/\/+$/, "") + "/",
