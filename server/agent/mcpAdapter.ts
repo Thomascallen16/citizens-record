@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { agentToolDefinitions, type AgentToolName } from "./toolContract";
 
 /**
@@ -26,7 +27,7 @@ export function getMcpToolDefinitions(): McpToolDefinition[] {
   return agentToolDefinitions.map(tool => ({
     name: tool.name,
     description: tool.description,
-    inputSchema: tool.input.toJSONSchema() as Record<string, unknown>,
+    inputSchema: z.toJSONSchema(tool.input) as Record<string, unknown>,
     annotations: {
       readOnlyHint: true,
     },
