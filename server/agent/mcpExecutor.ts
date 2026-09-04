@@ -1,4 +1,4 @@
-import type { Response, Request } from "express";
+import type { Request, Response } from "express";
 import type { User } from "../../drizzle/schema";
 import { appRouter } from "../routers";
 import { getAgentToolDefinition, type AgentToolName } from "./toolContract";
@@ -9,6 +9,8 @@ export type McpExecutionContext = {
   res: Response;
   user: User;
 };
+
+type RecordScopedInput = { recordId: number };
 
 /**
  * Execute an agent tool through the application's existing tRPC/domain layer.
@@ -28,8 +30,8 @@ export async function executeMcpTool(
 
   const definition = getAgentToolDefinition(name);
   if (!definition) throw new Error(`Unknown MCP tool: ${name}`);
-
   const parsed = definition.input.parse(input);
+
   const caller = appRouter.createCaller({
     req: context.req,
     res: context.res,
@@ -40,16 +42,16 @@ export async function executeMcpTool(
     case "record.list":
       return caller.canonical.records.list();
     case "record.get":
-      return caller.canonical.records.get(parsed);
+      return caller.canonical.records.get(parsed as RecordScopedInput);
     case "source.list":
-      return caller.canonical.sources.list(parsed);
+      return caller.canonical.sources.list(parsed as RecordScopedInput);
     case "evidence.list":
-      return caller.canonical.evidence.list(parsed);
+      return caller.canonical.evidence.list(parsed as RecordScopedInput);
     case "claim.list":
-      return caller.canonical.claims.list(parsed);
+      return caller.canonical.claims.list(parsed as RecordScopedInput);
     case "finding.list":
-      return caller.canonical.findings.list(parsed);
+      return caller.canonical.findings.list(parsed as RecordScopedInput);
     case "unknown.list":
-      return caller.canonical.unknowns.list(parsed);
+      return caller.canonical.unknowns.list(parsed as RecordScopedInput);
   }
 }
