@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleStripeWebhook } from "../stripeWebhook";
+import { handleMcpRequest } from "../agent/mcpHttp";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,11 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+
+  // Authenticated MCP endpoint. It delegates every tool call to the
+  // application-owned router/domain layer rather than accessing the database.
+  app.all("/mcp", handleMcpRequest);
+
   // tRPC API
   app.use(
     "/api/trpc",
