@@ -15,6 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/script-studio"} component={CivicScriptStudio} />
       <Route path={"/civic-voices"} component={CivicVoices} />
+      <Route path={"/workspace"} component={RecordWorkspace} />
       <Route path={"/record"} component={RecordWorkspace} />
       <Route path={"/"} component={Home} />
       <Route path={"/404"} component={NotFound} />
