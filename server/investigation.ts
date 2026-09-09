@@ -1,40 +1,15 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import {
+  emptyResult,
+  investigationClassifications,
+  validateInvestigationResult as validateEvidenceIntegrity,
+  type InvestigationResult,
+  type RetrievedEvidence,
+} from "@thomascallen16/evidence-integrity-engine";
 import { canonicalClaims, claimEvidenceLinks } from "../drizzle/canonical";
 import { sourceExcerpts, sourceRecords, chronologyEvents } from "../drizzle/schema";
 import { invokeLLM, type InvokeResult } from "./_core/llm";
-
-export const investigationClassifications = ["FACT", "LAW", "CLAIM", "INFERENCE", "QUESTION", "UNKNOWN", "CONTRADICTION"] as const;
-export type InvestigationClassification = typeof investigationClassifications[number];
-
-export type RetrievedEvidence = {
-  evidenceId: number;
-  sourceId: number | null;
-  source: { title: string; recordType: string; origin: string; location: string; provenanceNote: string } | null;
-  label: string;
-  content: string;
-  locator: string | null;
-  confidenceStatus: string;
-  claimIds: number[];
-};
-
-export type InvestigationFinding = {
-  classification: InvestigationClassification;
-  statement: string;
-  supportingEvidenceIds: number[];
-  contradictingEvidenceIds: number[];
-  confidence: string;
-  explanation: string;
-  provenance: string;
-  uncertainty: string;
-};
-
-export type InvestigationResult = {
-  summary: string;
-  findings: InvestigationFinding[];
-  contradictions: string[];
-  unknowns: string[];
-};
 
 const resultSchema = {
   name: "proof_flow_investigation",
@@ -112,26 +87,18 @@ export async function retrieveRelevantEvidence(db: any, userId: number, caseId: 
   }));
 }
 
-export function emptyResult(question: string): InvestigationResult {
-  return {
-    summary: `No stored evidence currently establishes an answer to: ${question}`,
-    findings: [{ classification: "UNKNOWN", statement: "The available record does not establish an answer.", supportingEvidenceIds: [], contradictingEvidenceIds: [], confidence: "none", explanation: "No source-backed evidence was available for this investigation.", provenance: "No retrieved evidence.", uncertainty: "Additional source material is required." }],
-    contradictions: [],
-    unknowns: ["No source-backed evidence was available for this question."],
-  };
-}
+export { emptyResult };
 
-export function validateInvestigationResult(result: InvestigationResult, evidenceIds: number[]): { result: InvestigationResult; validationStatus: "VALID" | "UNKNOWN" | "CONTRADICTION" } {
-  const allowed = new Set(evidenceIds);
-  for (const finding of result.findings) {
-    if (!investigationClassifications.includes(finding.classification)) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "AI returned an unsupported classification." });
-    for (const id of [...finding.supportingEvidenceIds, ...finding.contradictingEvidenceIds]) {
-      if (!allowed.has(id)) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `AI referenced unavailable evidence ${id}.` });
-    }
+/** Validate model/application output without treating the model as truth. */
+export function validateInvestigationResult(result: InvestigationResult, evidenceIds: number[]) {
+  try {
+    return validateEvidenceIntegrity(result, evidenceIds);
+  } catch (error) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: error instanceof Error ? error.message : "Investigation validation failed.",
+    });
   }
-  const hasContradiction = result.findings.some(finding => finding.classification === "CONTRADICTION") || result.contradictions.length > 0;
-  const hasUnknown = result.findings.some(finding => finding.classification === "UNKNOWN") || result.unknowns.length > 0;
-  return { result, validationStatus: hasContradiction ? "CONTRADICTION" : hasUnknown ? "UNKNOWN" : "VALID" };
 }
 
 function parseResult(response: InvokeResult): InvestigationResult {
