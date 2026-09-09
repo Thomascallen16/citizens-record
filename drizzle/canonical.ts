@@ -7,6 +7,8 @@ export const sourceDesignations = ["PRIMARY", "SECONDARY", "UNKNOWN"] as const;
 export const epistemicCategories = ["FACT", "AUTHORITY", "CLAIM", "INFERENCE", "CONTRADICTION", "QUESTION", "UNKNOWN"] as const;
 export const unknownStatuses = ["OPEN", "PARTIALLY_RESOLVED", "RESOLVED"] as const;
 export const evidenceLinkRelationships = ["SUPPORTING", "CONTRARY"] as const;
+export const investigationStatuses = ["QUEUED", "ANALYZING", "COMPLETED", "FAILED"] as const;
+export const investigationValidationStatuses = ["VALID", "UNKNOWN", "CONTRADICTION", "FAILED"] as const;
 
 export const recordMetadata = mysqlTable("record_metadata", {
   id: int("id").autoincrement().primaryKey(),
@@ -23,6 +25,27 @@ export const recordMetadata = mysqlTable("record_metadata", {
   caseUnique: uniqueIndex("record_metadata_case_unique").on(table.caseId),
   ownerIdx: index("record_metadata_owner_idx").on(table.userId),
   caseOwnerFk: foreignKey({ columns: [table.userId, table.caseId], foreignColumns: [legalCases.userId, legalCases.id], name: "record_metadata_owner_case_fk" }).onDelete("cascade"),
+}));
+
+export const investigations = mysqlTable("investigations", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  userId: int("userId").notNull(),
+  question: text("question").notNull(),
+  status: mysqlEnum("status", investigationStatuses).default("QUEUED").notNull(),
+  requestedBy: int("requestedBy").notNull(),
+  retrievedEvidenceIds: text("retrievedEvidenceIds").notNull(),
+  model: varchar("model", { length: 160 }),
+  resultJson: text("resultJson"),
+  validationStatus: mysqlEnum("validationStatus", investigationValidationStatuses),
+  errorMessage: text("errorMessage"),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  ownerCaseIdx: index("investigations_owner_case_idx").on(table.userId, table.caseId, table.createdAt),
+  caseOwnerFk: foreignKey({ columns: [table.userId, table.caseId], foreignColumns: [legalCases.userId, legalCases.id], name: "investigations_owner_case_fk" }).onDelete("cascade"),
+  requesterFk: foreignKey({ columns: [table.requestedBy], foreignColumns: [users.id], name: "investigations_requester_fk" }).onDelete("cascade"),
 }));
 
 export const canonicalSourceMetadata = mysqlTable("canonical_source_metadata", {

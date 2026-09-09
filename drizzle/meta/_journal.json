@@ -36,6 +36,13 @@
       "when": 1788450000000,
       "tag": "0004_canonical_record_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1788460000000,
+      "tag": "0005_investigations",
+      "breakpoints": true
     }
   ]
 }

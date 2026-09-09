@@ -18,12 +18,14 @@ import {
   sourceDesignations,
   unknownStatuses,
   evidenceLinkRelationships,
+  investigations,
 } from "../drizzle/canonical";
 import { caseMembers, legalCases, sourceExcerpts, sourceRecords, chronologyEvents } from "../drizzle/schema";
 import { getDb } from "./db";
 import { protectedProcedure, router } from "./_core/trpc";
 import { canonicalAuditEvents } from "../drizzle/canonicalAudit";
 import { assertFindingSavePolicy } from "./canonicalPolicy";
+import { analyzeInvestigation, retrieveClaimsAndChronology, retrieveRelevantEvidence, validateInvestigationResult } from "./investigation";
 
 const recordId = z.object({ recordId: z.number().int().positive() });
 const sourceId = z.object({ sourceRecordId: z.number().int().positive() });
@@ -221,5 +223,32 @@ export const canonicalRouter = router({
       const db = await dbOrThrow(); const result = await db.insert(canonicalUnknowns).values({ caseId: input.recordId, userId: ctx.user.id, description: input.description, whyItMatters: input.whyItMatters, relatedClaimId: input.relatedClaimId, relatedFindingId: input.relatedFindingId, relatedSourceRecordId: input.relatedSourceRecordId, relatedChronologyEventId: input.relatedChronologyEventId, status: "OPEN", resolutionNotes: null }); const id = Number(result[0].insertId); await audit(ctx.user.id, input.recordId, "unknown", id, "CREATED", "Unknown or unresolved question preserved.", null, input); return { id };
     }),
     updateStatus: protectedProcedure.input(recordId.extend({ unknownId: z.number().int().positive(), status: z.enum(unknownStatuses), resolutionNotes: z.string().max(10000).nullable() })).mutation(async ({ ctx, input }) => { await ownedCase(ctx.user.id, input.recordId); const db = await dbOrThrow(); const before = (await db.select().from(canonicalUnknowns).where(and(eq(canonicalUnknowns.id, input.unknownId), eq(canonicalUnknowns.caseId, input.recordId), eq(canonicalUnknowns.userId, ctx.user.id))).limit(1))[0]; if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Unknown not found" }); await db.update(canonicalUnknowns).set({ status: input.status, resolutionNotes: input.resolutionNotes }).where(eq(canonicalUnknowns.id, input.unknownId)); await audit(ctx.user.id, input.recordId, "unknown", input.unknownId, "STATUS_CHANGED", "Unknown status changed; history preserved.", before, input); return { success: true }; }),
+  }),
+  investigations: router({
+    list: protectedProcedure.input(recordId).query(async ({ ctx, input }) => {
+      await ownedCase(ctx.user.id, input.recordId);
+      const db = await dbOrThrow();
+      return db.select().from(investigations).where(and(eq(investigations.caseId, input.recordId), eq(investigations.userId, ctx.user.id))).orderBy(desc(investigations.createdAt));
+    }),
+    ask: protectedProcedure.input(recordId.extend({ question: z.string().trim().min(3).max(5000) })).mutation(async ({ ctx, input }) => {
+      await ownedCase(ctx.user.id, input.recordId);
+      const db = await dbOrThrow();
+      const inserted = await db.insert(investigations).values({ caseId: input.recordId, userId: ctx.user.id, question: input.question, status: "ANALYZING", requestedBy: ctx.user.id, retrievedEvidenceIds: "[]" });
+      const investigationId = Number(inserted[0].insertId);
+      try {
+        const evidence = await retrieveRelevantEvidence(db, ctx.user.id, input.recordId, input.question);
+        const evidenceIds = evidence.map(item => item.evidenceId);
+        const related = await retrieveClaimsAndChronology(db, ctx.user.id, input.recordId, evidenceIds);
+        const analyzed = await analyzeInvestigation(input.question, evidence, related.claims, related.chronology);
+        const validated = validateInvestigationResult(analyzed.result, evidenceIds);
+        await db.update(investigations).set({ status: "COMPLETED", retrievedEvidenceIds: JSON.stringify(evidenceIds), model: analyzed.model, resultJson: JSON.stringify(validated.result), validationStatus: validated.validationStatus, completedAt: new Date(), errorMessage: null }).where(and(eq(investigations.id, investigationId), eq(investigations.userId, ctx.user.id), eq(investigations.caseId, input.recordId)));
+        await audit(ctx.user.id, input.recordId, "investigation", investigationId, "CREATED", "Investigation completed with provenance and integrity validation.", null, { question: input.question, evidenceIds, model: analyzed.model, validationStatus: validated.validationStatus });
+        return { id: investigationId, question: input.question, evidence, result: validated.result, validationStatus: validated.validationStatus, model: analyzed.model };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Investigation failed.";
+        await db.update(investigations).set({ status: "FAILED", validationStatus: "FAILED", errorMessage: message.slice(0, 10000), completedAt: new Date() }).where(and(eq(investigations.id, investigationId), eq(investigations.userId, ctx.user.id), eq(investigations.caseId, input.recordId)));
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Investigation failed. The question was recorded, but no result was produced." });
+      }
+    }),
   }),
 });
