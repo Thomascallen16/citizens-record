@@ -107,8 +107,8 @@ importers:
         specifier: ^5.90.2
         version: 5.90.2(react@19.2.1)
       '@thomascallen16/evidence-integrity-engine':
-        specifier: github:Thomascallen16/evidence-integrity-engine#74a69ae214d917bf44cefbd5c61afd17cfcbc23a
-        version: evidence-integrity-engine@https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/74a69ae214d917bf44cefbd5c61afd17cfcbc23a
+        specifier: github:Thomascallen16/evidence-integrity-engine#36741bbedd6a3675847734c35cda42550f37525b
+        version: https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/36741bbedd6a3675847734c35cda42550f37525b
       '@trpc/client':
         specifier: ^11.6.0
         version: 11.6.0(@trpc/server@11.6.0(typescript@5.9.3))(typescript@5.9.3)
@@ -163,6 +163,9 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.6
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react:
         specifier: ^19.2.1
         version: 19.2.1
@@ -2307,6 +2310,10 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
+  '@thomascallen16/evidence-integrity-engine@https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/36741bbedd6a3675847734c35cda42550f37525b':
+    resolution: {tarball: https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/36741bbedd6a3675847734c35cda42550f37525b}
+    version: 0.1.0
+
   '@trpc/client@11.6.0':
     resolution: {integrity: sha512-DyWbYk2hd50BaVrXWVkaUnaSwgAF5g/lfBkXtkF1Aqlk6BtSzGUo3owPkgqQO2I5LwWy1+ra9TsSfBBvIZpTwg==}
     peerDependencies:
@@ -3110,10 +3117,6 @@ packages:
   eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
 
-  evidence-integrity-engine@https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/74a69ae214d917bf44cefbd5c61afd17cfcbc23a:
-    resolution: {tarball: https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/74a69ae214d917bf44cefbd5c61afd17cfcbc23a}
-    version: 0.1.0
-
   expect-type@1.2.2:
     resolution: {integrity: sha512-JhFGDVJ7tmDJItKhYgJCGLOWjuK9vPxiXoUFLwLDc99NlmklilbiQJwoctZtt13+xMw91MCk/REan6MWHqDjyA==}
     engines: {node: '>=12.0.0'}
@@ -3671,6 +3674,12 @@ packages:
     resolution: {integrity: sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg==}
     engines: {node: ^18 || >=20}
     hasBin: true
+
+  next-themes@0.4.6:
+    resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
+    peerDependencies:
+      react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
   node-releases@2.0.23:
     resolution: {integrity: sha512-cCmFDMSm26S6tQSDpBCg/NR8NENrVPhAJSf+XbxBG4rPFaaonlEoE9wHQmun+cls499TQGSb7ZyPBRlzgKfpeg==}
@@ -6566,6 +6575,8 @@ snapshots:
       '@tanstack/query-core': 5.90.2
       react: 19.2.1
 
+  '@thomascallen16/evidence-integrity-engine@https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/36741bbedd6a3675847734c35cda42550f37525b': {}
+
   '@trpc/client@11.6.0(@trpc/server@11.6.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@trpc/server': 11.6.0(typescript@5.9.3)
@@ -7401,8 +7412,6 @@ snapshots:
 
   eventemitter3@4.0.7: {}
 
-  evidence-integrity-engine@https://codeload.github.com/Thomascallen16/evidence-integrity-engine/tar.gz/74a69ae214d917bf44cefbd5c61afd17cfcbc23a: {}
-
   expect-type@1.2.2: {}
 
   exsolve@1.0.7: {}
@@ -8215,6 +8224,11 @@ snapshots:
   nanoid@3.3.11: {}
 
   nanoid@5.1.6: {}
+
+  next-themes@0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
+    dependencies:
+      react: 19.2.1
+      react-dom: 19.2.1(react@19.2.1)
 
   node-releases@2.0.23: {}
 
