@@ -23,7 +23,7 @@ The backend is reachable and the protected investigation API route is deployed. 
 | Backend/API deployment | VERIFIED | `/api/trpc/auth.me` returns HTTP 200; protected investigation route returns expected HTTP 401 when unauthenticated. |
 | Database provider | BLOCKED | Repository uses MySQL/TiDB through `DATABASE_URL`, but the actual Railway database service and connection cannot be inspected from this session. |
 | Authentication provider | FAILED | The app intends to use Manus OAuth, but the deployed bundle has `VITE_OAUTH_PORTAL_URL` and `VITE_APP_ID` compiled as undefined. |
-| LLM provider/endpoint | BLOCKED | Source uses the built-in Forge LLM through `BUILT_IN_FORGE_API_URL` and `BUILT_IN_FORGE_API_KEY`; production values cannot be inspected without Railway project access. |
+| LLM provider/endpoint | BLOCKED | Source invokes the built-in Forge LLM through `BUILT_IN_FORGE_API_URL` and `BUILT_IN_FORGE_API_KEY`; production values cannot be inspected without Railway project access. Result validation is additionally delegated to the pinned `@thomascallen16/evidence-integrity-engine` package on current `main`. |
 | Login | FAILED | Login button is rendered and handler is wired, but the compiled handler constructs `new URL("undefined/app-auth")` with `appId` undefined. |
 | Session | VERIFIED | Unauthenticated session initialization works: `/api/trpc/auth.me` returns `{ data: null }`. Authenticated session cannot be established because login fails first. |
 | `/workspace` initialization | VERIFIED | Railway `/workspace` returns the workspace UI; browser shows “Open the Record” and the OAuth button. Browser console has no runtime errors before login. |
@@ -33,7 +33,7 @@ The backend is reachable and the protected investigation API route is deployed. 
 | Evidence retrieval | BLOCKED | Requires authenticated case access and production database rows. No demo evidence was created. |
 | Provenance | BLOCKED | Source implementation preserves source/evidence IDs and provenance, but no live authenticated result was possible. |
 | LLM | BLOCKED | Requires authenticated request plus production Forge variables; no live invocation was attempted without those prerequisites. |
-| Integrity validation | VERIFIED | Local tests cover unavailable evidence IDs and contradiction/unknown status calculation; live result validation is blocked by authentication. |
+| Integrity validation | VERIFIED | Current `main` delegates validation to the pinned `@thomascallen16/evidence-integrity-engine`; local tests cover unavailable evidence IDs and contradiction/unknown status calculation. Live validation is blocked by authentication. |
 | Investigation persistence | BLOCKED | Requires production migration and authenticated mutation. |
 | Audit trail | BLOCKED | Requires successful persisted investigation. |
 | Result UI | VERIFIED | Production bundle contains the result renderer; live result rendering is blocked by authentication. |
