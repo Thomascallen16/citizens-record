@@ -7,43 +7,24 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import CivicScriptStudio from "./pages/CivicScriptStudio";
 import CivicVoices from "./pages/CivicVoices";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import RecordWorkspace from "./pages/RecordWorkspace";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
-  return (
-    <Switch>
-      <Route path={"/script-studio"} component={CivicScriptStudio} />
-      <Route path={"/civic-voices"} component={CivicVoices} />
-      <Route path={"/workspace"} component={RecordWorkspace} />
-      <Route path={"/record"} component={RecordWorkspace} />
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
-  );
+  return <Switch>
+    <Route path="/login" component={Login} />
+    <Route path="/script-studio" component={CivicScriptStudio} />
+    <Route path="/civic-voices" component={CivicVoices} />
+    <Route path="/workspace" component={RecordWorkspace} />
+    <Route path="/record" component={RecordWorkspace} />
+    <Route path="/" component={Home} />
+    <Route path="/404" component={NotFound} />
+    <Route component={NotFound} />
+  </Switch>;
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
 }
 
 export default App;
