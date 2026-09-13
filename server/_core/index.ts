@@ -3,7 +3,6 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { registerNativeAuthRoutes } from "./nativeAuthRoutes";
 import { appRouter } from "../routers";
@@ -33,7 +32,6 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerNativeAuthRoutes(app);
   registerStorageProxy(app);
-  registerOAuthRoutes(app);
   app.all("/mcp", handleMcpRequest);
   app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
   if (process.env.NODE_ENV === "development") await setupVite(app, server); else serveStatic(app);
