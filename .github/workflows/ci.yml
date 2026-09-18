@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: citizens-record-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # setup-node may restore an existing pnpm cache, but this workflow may not write one.
 cache-mode: read
 
