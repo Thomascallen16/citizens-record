@@ -12,6 +12,10 @@ permissions:
 
 cache-mode: none
 
+concurrency:
+  group: citizens-record-agent-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   audit-agent-surface:
     runs-on: ubuntu-latest
