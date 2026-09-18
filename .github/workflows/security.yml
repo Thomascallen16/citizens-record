@@ -11,6 +11,10 @@ permissions:
 
 cache-mode: none
 
+concurrency:
+  group: citizens-record-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gitleaks:
     name: Scan for committed secrets
