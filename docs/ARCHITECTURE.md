@@ -1,6 +1,6 @@
 # Canonical Architecture — The Citizens Record
 
-**Status:** Forensic foundation, September 3, 2026
+**Status:** Forensic foundation with bounded recursive improvement, October 2, 2026
 
 ## Canonical repository
 
@@ -17,7 +17,7 @@ The current codebase already provides the authenticated workspace experience at 
 
 ## Application modules
 
-ProofFlow, MetaGraph, Chronicle, Watchtower, Record Builder, and Pro Se Compass are modules, subsystems, concepts, or historical implementations—not separate canonical products. They should share the same record model, database, provenance rules, and audit trail when incorporated. No autonomous-agent, broad-crawling, cross-user-pattern, or public-collaboration system is part of this foundation.
+ProofFlow, MetaGraph, Chronicle, Watchtower, Record Builder, Pro Se Compass, and the Recursive Evidence Improvement subsystem are modules, subsystems, concepts, or historical implementations—not separate canonical products. They should share the same record model, database, provenance rules, and audit trail when incorporated. The Recursive Evidence Improvement subsystem is bounded, evidence-gated, independently verified, and does not grant agents direct database, deployment, secret, or publication authority.
 
 ## Core record flow
 
@@ -86,3 +86,14 @@ The application is organization and research software. It does not provide legal
 Implemented on feature/canonical-record-workflow: the existing `legal_cases` table remains the storage-compatible case/workspace anchor while `record_metadata` supplies the user-facing Record title, context, verbatim original question, lifecycle status, and private visibility. Existing `source_records` and `source_excerpts` are reused for sources and source-backed evidence, with small canonical metadata extensions. Claims, findings, unknowns, normalized evidence/source/claim/finding links, and canonical audit events are additive models.
 
 The canonical epistemic vocabulary is FACT, AUTHORITY, CLAIM, INFERENCE, CONTRADICTION, QUESTION, UNKNOWN. Existing confidence values remain separate reliability/verification markers and are never treated as epistemic categories.
+
+
+## Recursive Evidence Improvement
+
+The canonical engine now includes a bounded recursive-improvement primitive at `server/evidenceIntegrity/recursiveImprovement.ts`. Its state machine is:
+
+**BASELINE → TESTING → VERIFIED_IMPROVEMENT / FAILED_IMPROVEMENT / REJECTED → repeat only from an accepted baseline**
+
+A candidate can advance only when it has a strict measurable improvement, passing tests, independent evidence, and a verifier distinct from the proposer. Proposal fingerprints prevent duplicate recursive loops, and every run is bounded by an explicit iteration limit. Improvement state is deliberately separate from epistemic status so a better procedure can never manufacture a FACT.
+
+The subsystem is deterministic and unit-tested. Persistence should later use append-only canonical audit records; production mutation and deployment remain separate controlled operations.
