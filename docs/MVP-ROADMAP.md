@@ -1,6 +1,6 @@
 # MVP Roadmap
 
-**Status:** Planning only. No feature implementation is authorized by this document.
+**Status:** Active implementation roadmap; October 2, 2026 update authorizes the bounded Recursive Evidence Improvement subsystem.
 
 ## Priority 0 — Canonical foundation
 
@@ -34,9 +34,15 @@ The existing case/source/evidence/chronology structures are foundations for this
 3. Intentional public publishing with a separate reviewed/read-only representation.
 4. Public record pages that cannot expose private source objects or documents.
 
+## Controlled agentic capabilities
+
+- Bounded Recursive Evidence Improvement is implemented as a deterministic, evidence-gated subsystem.
+- Agent proposals remain subject to independent verification, test evidence, bounded iteration, auditability, and existing ownership/security controls.
+- The subsystem does not self-authorize deployment, secrets, database administration, publication, or legal conclusions.
+
 ## Explicitly deferred
 
-- Autonomous agents
+- Unbounded autonomous agents
 - Full Watchtower monitoring
 - Broad web crawling
 - Cross-user pattern detection
@@ -64,6 +70,6 @@ A Priority 1 release should not be called complete until authentication, ownersh
 
 Implemented on the feature branch: canonical private Record metadata, source-backed evidence, claims, findings, unknowns, normalized traceability links, server-enforced ownership checks, FACT-with-evidence validation, canonical audit events, and an authenticated `/record` workspace.
 
-Next implementation pass: provenance/versioning, timeline integration, entity relationships, and deliberate public publishing.
+Next implementation pass: provenance/versioning, timeline integration, entity relationships, deliberate public publishing, and persistence of recursive-improvement runs in the append-only audit model.
 
-**Verification note:** GitHub's pull-request workflows for the branch are currently reporting `action_required`, so this environment cannot truthfully report a completed CI/test/build run for the final branch head yet. Earlier CI did execute and caught a TypeScript `Set` iteration issue; that issue was corrected before the current head. No deployment was performed.
+**Verification note:** The recursive-improvement subsystem has a dedicated CI workflow plus unit tests and TypeScript checking. The feature branch must still pass GitHub Actions before merge; no production deployment is performed by this change.
