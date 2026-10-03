@@ -88,6 +88,76 @@ describe("recursive improvement engine", () => {
     expect(result.reason).toContain("Duplicate");
   });
 
+  it("rejects duplicate content even when the supplied fingerprints differ", () => {
+    const first = {
+      ...proposal("p1", "same idea", "same change"),
+      fingerprint: "attacker-fingerprint-a",
+    };
+    const second = {
+      ...proposal("p2", "same idea", "same change"),
+      fingerprint: "attacker-fingerprint-b",
+    };
+
+    const result = verifyImprovement(
+      second,
+      {
+        score: 95,
+        testsPassed: true,
+        verifier: "verifier",
+        evidence: [{ id: "T1", description: "test", source: "CI", independent: true }],
+        notes: [],
+      },
+      90,
+      new Set([fingerprintProposal(first.hypothesis, first.changeSummary)]),
+    );
+
+    expect(result.state).toBe("REJECTED");
+    expect(result.reason).toContain("Duplicate");
+  });
+
+  it("canonicalizes proposer fingerprints before recursive loop detection", () => {
+    let calls = 0;
+
+    const run = runRecursiveImprovement({
+      runId: "run-adversarial",
+      objective: "prevent duplicate recursive proposals",
+      baselineScore: 50,
+      maxIterations: 3,
+      propose: () => {
+        calls += 1;
+        return {
+          id: `p${calls}`,
+          hypothesis: "same idea",
+          changeSummary: "same change",
+          proposer: "builder",
+          fingerprint: `forged-${calls}`,
+        };
+      },
+      evaluate: (_proposal, context) => ({
+        score: context.currentScore + 10,
+        testsPassed: true,
+        verifier: "independent-verifier",
+        evidence: [{
+          id: "E1",
+          description: "Independent regression suite",
+          source: "CI",
+          independent: true,
+        }],
+        notes: [],
+      }),
+    });
+
+    expect(run.state).toBe("REJECTED");
+    expect(run.currentScore).toBe(60);
+    expect(run.iterations).toHaveLength(2);
+    expect(run.iterations[0].state).toBe("VERIFIED_IMPROVEMENT");
+    expect(run.iterations[1].state).toBe("REJECTED");
+    expect(run.iterations[1].reason).toContain("Duplicate");
+    expect(run.iterations[1].proposal.fingerprint).toBe(
+      fingerprintProposal("same idea", "same change"),
+    );
+  });
+
   it("recursively accepts multiple verified improvements until the limit", () => {
     const run = runRecursiveImprovement({
       runId: "run-1",

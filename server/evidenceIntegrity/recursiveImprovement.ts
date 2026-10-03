@@ -84,7 +84,15 @@ export function verifyImprovement(
   baselineScore: number,
   seenFingerprints: ReadonlySet<string>,
 ): { state: RecursiveImprovementState; reason: string } {
-  if (seenFingerprints.has(proposal.fingerprint)) {
+  // Never trust a proposer-supplied fingerprint for identity. Derive the
+  // canonical fingerprint from the proposal content at the verification
+  // boundary so direct callers cannot bypass duplicate detection.
+  const canonicalFingerprint = fingerprintProposal(
+    proposal.hypothesis,
+    proposal.changeSummary,
+  );
+
+  if (seenFingerprints.has(canonicalFingerprint)) {
     return {
       state: "REJECTED",
       reason: "Duplicate proposal fingerprint; recursive loop prevented.",
@@ -172,7 +180,17 @@ export function runRecursiveImprovement(
       priorIterations: iterations,
     };
 
-    const proposal = options.propose(context);
+    const proposedProposal = options.propose(context);
+    // Canonicalize identity at the engine boundary. The proposer may supply
+    // a fingerprint for compatibility, but it is never authoritative.
+    const proposal: ImprovementProposal = {
+      ...proposedProposal,
+      fingerprint: fingerprintProposal(
+        proposedProposal.hypothesis,
+        proposedProposal.changeSummary,
+      ),
+    };
+
     const evaluation = options.evaluate(proposal, context);
     const result = verifyImprovement(proposal, evaluation, currentScore, seenFingerprints);
 
