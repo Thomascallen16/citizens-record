@@ -10,7 +10,9 @@ describe("agent tool contract", () => {
       "evidence.list",
       "claim.list",
       "finding.list",
+      "finding.get",
       "unknown.list",
+      "audit.list",
     ]);
     expect(agentToolDefinitions.every(tool => tool.access === "read")).toBe(true);
   });

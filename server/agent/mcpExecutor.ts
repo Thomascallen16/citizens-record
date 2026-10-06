@@ -11,6 +11,7 @@ export type McpExecutionContext = {
 };
 
 type RecordScopedInput = { recordId: number };
+type FindingScopedInput = { recordId: number; findingId: number };
 
 /**
  * Execute an agent tool through the application's existing tRPC/domain layer.
@@ -51,7 +52,11 @@ export async function executeMcpTool(
       return caller.canonical.claims.list(parsed as RecordScopedInput);
     case "finding.list":
       return caller.canonical.findings.list(parsed as RecordScopedInput);
+    case "finding.get":
+      return caller.canonical.findings.get(parsed as FindingScopedInput);
     case "unknown.list":
       return caller.canonical.unknowns.list(parsed as RecordScopedInput);
+    case "audit.list":
+      return caller.canonical.audit.list(parsed as RecordScopedInput);
   }
 }

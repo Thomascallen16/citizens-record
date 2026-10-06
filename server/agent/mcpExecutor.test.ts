@@ -19,4 +19,10 @@ describe("MCP executor", () => {
       executeMcpTool("record.get", { recordId: 0 }, context),
     ).rejects.toThrow();
   });
+
+  it("validates nested finding input before execution", async () => {
+    await expect(
+      executeMcpTool("finding.get", { recordId: 1, findingId: 0 }, context),
+    ).rejects.toThrow();
+  });
 });

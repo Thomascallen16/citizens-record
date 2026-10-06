@@ -45,8 +45,20 @@ export const agentToolDefinitions = [
     input: z.object({ recordId: z.number().int().positive() }),
   },
   {
+    name: "finding.get",
+    description: "Get one canonical finding with its linked claims, evidence, and source metadata.",
+    access: "read",
+    input: z.object({ recordId: z.number().int().positive(), findingId: z.number().int().positive() }),
+  },
+  {
     name: "unknown.list",
     description: "List canonical unknowns belonging to a private record owned by the authenticated user.",
+    access: "read",
+    input: z.object({ recordId: z.number().int().positive() }),
+  },
+  {
+    name: "audit.list",
+    description: "List the append-only audit history for a private record owned by the authenticated user.",
     access: "read",
     input: z.object({ recordId: z.number().int().positive() }),
   },
