@@ -1,40 +1,55 @@
-# Authenticated MCP Execution
+# MCP Execution and Evidence Governance
 
-The Citizens Record now exposes a stateless authenticated MCP HTTP endpoint at `/mcp`.
+The Citizens Record exposes a stateless, authenticated MCP HTTP endpoint at `/mcp`.
+
+The MCP boundary is deliberately treated as an **evidence-access infrastructure layer**, not as an autonomous authority. An agent may retrieve governed record material, but the canonical application remains authoritative for identity, ownership, provenance, epistemic status, and audit history.
 
 ## Security boundary
 
-1. Express receives the request and validates the Host/Origin policy.
-2. The existing `sdk.authenticateRequest` authenticates the caller.
-3. Only the provider-neutral read-only tools from `server/agent/toolContract.ts` are executable.
+1. Express validates the MCP Host/Origin policy.
+2. The existing authentication layer authenticates the caller.
+3. Only provider-neutral read-only tools are executable.
 4. Tool arguments are validated by the same Zod contracts used by the agent surface.
-5. `mcpExecutor.ts` creates an application `appRouter` caller with the authenticated user.
-6. Canonical procedures perform the existing ownership checks and database access.
+5. The MCP executor creates an application caller with the authenticated user.
+6. Canonical procedures perform ownership checks and database access.
+7. MCP receives no database credentials and contains no second copy of ownership logic.
 
-MCP therefore has no database credentials and no second copy of ownership logic.
+## Governed read surface
 
-## Endpoint configuration
+The MCP contract exposes:
 
-`MCP_ALLOWED_HOSTS` is a comma-separated list of hostnames accepted by `/mcp`.
-When unset, local development accepts `localhost`, `127.0.0.1`, and `[::1]`.
+- `record.list` — private records owned by the authenticated user
+- `record.get` — one owned record
+- `source.list` — sources belonging to an owned record
+- `evidence.list` — source-backed evidence
+- `claim.list` — canonical claims
+- `finding.list` — canonical findings
+- `finding.get` — one finding with linked claims, evidence, and source metadata
+- `unknown.list` — unresolved questions/unknowns
+- `audit.list` — append-only audit history
 
-`MCP_ALLOWED_ORIGINS` optionally restricts browser Origin values. When unset, a
-present Origin must resolve to an allowed MCP host.
+The final two additions are intentional: an agent should be able to inspect what remains unresolved and trace a material finding back through evidence and sources, while also inspecting the record's audit history.
 
-For a public deployment, configure both values explicitly for the production
-host and browser origin rather than relying on the local defaults.
+## EIE invariant
 
-## Current scope
+MCP is not allowed to manufacture certainty.
 
-The first execution slice is intentionally read-only:
+The canonical epistemic categories remain:
 
-- `record.list`
-- `record.get`
-- `source.list`
-- `evidence.list`
-- `claim.list`
-- `finding.list`
-- `unknown.list`
+**FACT · AUTHORITY · CLAIM · INFERENCE · CONTRADICTION · QUESTION · UNKNOWN**
 
-Writes, background jobs, evidence ingestion, and agent-side mutations are not
-exposed through MCP by this change.
+Reliability/verification markers remain separate from epistemic category. An agent must not treat a confidence label, proximity, allegation, or model-generated explanation as proof.
+
+A useful agent workflow is therefore:
+
+**Question → Record → Sources → Evidence → Claims/Findings → Traceability → Unknowns → Audit**
+
+This is the MCP expression of the Evidence Integrity Engine's core principle: evidence and provenance travel with the reasoning surface.
+
+## Production configuration
+
+Set `MCP_ALLOWED_HOSTS` explicitly for every public deployment.
+
+Set `MCP_ALLOWED_ORIGINS` when browser-origin restrictions are required.
+
+Before production exposure, independently verify authentication, owner isolation, audit behavior, and the deployed host. Do not infer production readiness from source code alone.
