@@ -65,6 +65,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { canonicalRouter } from "./canonicalRecord";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { PRIVACY_NOTICE_VERSION } from "../shared/workspacePolicies";
+import { neuralObservationInputSchema, normalizeNeuralObservation } from "./evidenceIntegrity/neuralObservation";
 
 const confidenceStatusSchema = z.enum(confidenceStatuses);
 const caseInput = z.object({
@@ -135,6 +136,9 @@ export const appRouter = router({
       if (input.caseId) await requireOwnedCase(ctx.user.id, input.caseId);
       return { id: await createPrivacyRequestForUser(ctx.user.id, input) };
     }),
+  }),
+  neuralObservation: router({
+    normalize: protectedProcedure.input(neuralObservationInputSchema).mutation(async ({ input }) => normalizeNeuralObservation(input)),
   }),
   analytics: router({
     track: protectedProcedure.input(z.object({
