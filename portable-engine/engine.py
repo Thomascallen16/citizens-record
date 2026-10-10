@@ -12,15 +12,22 @@ import hmac
 import json
 import pathlib
 import subprocess
+import sys
 import time
 import uuid
 
-ROOT = pathlib.Path(__file__).resolve().parent
+# A frozen PyInstaller build must keep receipts beside the USB executable,
+# not inside PyInstaller's temporary extraction directory.
+ROOT = (
+    pathlib.Path(sys.executable).resolve().parent
+    if getattr(sys, "frozen", False)
+    else pathlib.Path(__file__).resolve().parent
+)
 TOOLS = ROOT / "tools" / "bento4"
 STATE = ROOT / "state"
 RECEIPTS = STATE / "receipts"
 OUTPUT = ROOT / "output"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -84,7 +91,6 @@ def receipt(event: str, payload: dict) -> pathlib.Path:
     record["receipt_sha256"] = hashlib.sha256(
         json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    # UUID prevents same-millisecond launches from overwriting evidence.
     out = RECEIPTS / f"{time.time_ns()}-{uuid.uuid4().hex}-{event}.json"
     with out.open("x", encoding="utf-8") as stream:
         json.dump(record, stream, indent=2, ensure_ascii=False)
