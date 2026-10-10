@@ -10,6 +10,18 @@ import pocket_buddy
 
 
 class PocketBuddyTests(unittest.TestCase):
+    def test_frozen_app_stores_state_next_to_executable(self):
+        root = pocket_buddy.runtime_root(
+            script_file="/tmp/pyinstaller/_MEI123/pocket_buddy.py",
+            frozen=True,
+            executable="E:/PocketBuddy/PocketBuddy.exe",
+        )
+        self.assertEqual(root, pathlib.Path("E:/PocketBuddy").resolve())
+
+    def test_source_mode_uses_script_directory(self):
+        root = pocket_buddy.runtime_root(script_file="/work/portable-engine/pocket_buddy.py", frozen=False)
+        self.assertEqual(root, pathlib.Path("/work/portable-engine").resolve())
+
     def test_history_round_trip_stays_in_portable_state(self):
         with tempfile.TemporaryDirectory() as temp:
             history = pathlib.Path(temp) / "state" / "chat_history.json"
