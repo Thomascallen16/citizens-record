@@ -10,13 +10,23 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import sys
 import threading
 import urllib.error
 import urllib.request
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-ROOT = pathlib.Path(__file__).resolve().parent
+def runtime_root(script_file=None, frozen=None, executable=None) -> pathlib.Path:
+    """Return the durable app directory, not PyInstaller's temporary extraction folder."""
+    is_frozen = getattr(sys, "frozen", False) if frozen is None else frozen
+    if is_frozen:
+        executable_path = executable or sys.executable
+        return pathlib.Path(executable_path).resolve().parent
+    return pathlib.Path(script_file or __file__).resolve().parent
+
+
+ROOT = runtime_root()
 STATE = ROOT / "state"
 HISTORY = STATE / "chat_history.json"
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
