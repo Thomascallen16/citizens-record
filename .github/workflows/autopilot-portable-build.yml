@@ -34,11 +34,30 @@ jobs:
           Copy-Item portable-engine/PORTABLE_BUILD.md package/Autopilot/README.txt
           New-Item -ItemType Directory -Force -Path package/Autopilot/tools/bento4, package/Autopilot/output, package/Autopilot/state/receipts | Out-Null
           @'
+          @echo off
+          cd /d "%~dp0"
+          echo Starting Autopilot...
+          echo.
+          Autopilot.exe
+          set "EXITCODE=%ERRORLEVEL%"
+          echo.
+          echo Startup receipt folder: state\receipts
+          if not "%EXITCODE%"=="0" echo Autopilot exited with code %EXITCODE%.
+          echo.
+          pause
+          exit /b %EXITCODE%
+          '@ | Set-Content package/Autopilot/launch.bat
+          @'
           Bento4 tools are not bundled in this development artifact.
           This package does not bypass DRM or access controls.
           '@ | Set-Content package/Autopilot/tools/bento4/README.txt
-      - name: Smoke test executable
-        run: ./dist/Autopilot.exe
+      - name: Smoke test packaged executable and receipt
+        shell: pwsh
+        run: |
+          & package/Autopilot/Autopilot.exe
+          if ($LASTEXITCODE -ne 0) { throw "Autopilot executable failed with exit code $LASTEXITCODE" }
+          $receipt = Get-ChildItem package/Autopilot/state/receipts -Filter "*.json"
+          if (-not $receipt) { throw "Startup receipt was not written beside the executable" }
       - name: Upload portable package
         uses: actions/upload-artifact@v4
         with:
