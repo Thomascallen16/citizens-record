@@ -1,0 +1,48 @@
+name: Autopilot Portable Windows Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "portable-engine/**"
+      - ".github/workflows/autopilot-portable-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install build dependency
+        run: python -m pip install --disable-pip-version-check pyinstaller
+      - name: Syntax-check engine
+        run: python -m py_compile portable-engine/engine.py
+      - name: Build standalone executable
+        run: pyinstaller --clean --onefile --name Autopilot portable-engine/engine.py
+      - name: Assemble portable folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path package/Autopilot | Out-Null
+          Copy-Item dist/Autopilot.exe package/Autopilot/Autopilot.exe
+          Copy-Item portable-engine/PORTABLE_BUILD.md package/Autopilot/README.txt
+          New-Item -ItemType Directory -Force -Path package/Autopilot/tools/bento4, package/Autopilot/output, package/Autopilot/state/receipts | Out-Null
+          @'
+          Bento4 tools are not bundled in this development artifact.
+          This package does not bypass DRM or access controls.
+          '@ | Set-Content package/Autopilot/tools/bento4/README.txt
+      - name: Smoke test executable
+        run: ./dist/Autopilot.exe
+      - name: Upload portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Autopilot-Windows-x64
+          path: package/Autopilot/
+          if-no-files-found: error
+          retention-days: 14
