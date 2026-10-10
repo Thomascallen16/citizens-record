@@ -8,6 +8,7 @@ inside this portable directory.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import pathlib
 import subprocess
@@ -100,7 +101,7 @@ def verify_receipt(path: pathlib.Path) -> bool:
     actual = hashlib.sha256(
         json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    return hashlib.compare_digest(actual, expected) if hasattr(hashlib, "compare_digest") else __import__("hmac").compare_digest(actual, expected)
+    return hmac.compare_digest(actual, expected)
 
 
 def main() -> int:
@@ -110,17 +111,21 @@ def main() -> int:
     print(f"Root: {ROOT}")
     print("Mode: LOCAL / READ-ONLY")
     print("No host-wide scanning. No silent network access.")
-    print("Bento4:", "available" if any(
-        (TOOLS / name).is_file() for name in ("mp4info.exe", "mp4info", "mp4info.bin")
-    ) else "not bundled yet")
-    path = receipt("startup", {
-        "root": str(ROOT),
-        "mode": "local-read-only",
-        "version": VERSION,
-    })
+    print(
+        "Bento4:",
+        "available" if any(
+            (TOOLS / name).is_file()
+            for name in ("mp4info.exe", "mp4info", "mp4info.bin")
+        ) else "not bundled yet",
+    )
+    path = receipt(
+        "startup",
+        {"root": str(ROOT), "mode": "local-read-only", "version": VERSION},
+    )
+    valid = verify_receipt(path)
     print(f"Receipt: {path}")
-    print(f"Receipt integrity: {'verified' if verify_receipt(path) else 'FAILED'}")
-    return 0 if verify_receipt(path) else 2
+    print(f"Receipt integrity: {'verified' if valid else 'FAILED'}")
+    return 0 if valid else 2
 
 
 if __name__ == "__main__":
