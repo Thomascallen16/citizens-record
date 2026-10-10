@@ -1,23 +1,42 @@
-# Portable build plan
+# Portable build status
 
-## Current development build
-- Launcher: launch.bat
-- Runtime: Python 3 standard library
-- Default posture: local, read-only
-- Evidence: SHA-256 startup receipts
-- Media layer: Bento4 adapter slot
+**Product identity:** Big Data Energy (BDE) / Autopilot  
+**Current engine version:** 0.1.2  
+**Target:** Windows x64, portable USB folder, no system-wide installation
 
-## Release target
-A release package should include a pinned Bento4 distribution appropriate to the
-target OS, a self-contained runtime where practical, and a manifest containing
-component versions and hashes.
+## What this build does today
 
-The launcher must resolve paths relative to itself so the drive letter can change.
+- Starts locally and in read-only mode.
+- Writes a uniquely named startup receipt beside the executable.
+- Verifies the receipt's SHA-256 integrity on startup.
+- Looks for Bento4 tools only inside `tools/bento4`.
+- Can inspect a user-selected local media file through bundled `mp4info` when that tool is supplied.
+- Has automated tests for receipt integrity, receipt uniqueness, and local-only Bento4 lookup.
+- Builds a self-contained Windows executable with PyInstaller through GitHub Actions.
 
-## Acceptance checks
-1. Copy the directory to removable storage.
-2. Double-click launch.bat on a clean Windows machine with the supported runtime.
-3. Confirm no host-wide scan occurs.
-4. Confirm a startup receipt is created under state/receipts.
-5. Add Bento4 binaries and verify mp4info is discovered locally.
-6. Run a media inspection against a user-authorized local file.
+## Important limitations
+
+This is a **portable engine foundation**, not yet the finished conversational AI companion. It does not currently include a local language model, chat interface, long-term conversational memory, specialist agents, or a complete media workflow. Bento4 binaries are not bundled in the current artifact, so actual MP4 inspection remains unavailable until compatible tools are packaged and verified.
+
+The executable and ZIP produced by GitHub Actions are build artifacts, not proof of a successful clean-computer or physical-USB test. GitHub artifact downloads expire according to the workflow's retention period.
+
+## Build and test
+
+On a development machine with Python 3.12:
+
+```powershell
+python -m unittest discover -s portable-engine/tests -v
+python -m py_compile portable-engine/engine.py
+python portable-engine/engine.py
+```
+
+GitHub Actions builds `Autopilot.exe`, smoke-tests it, writes a SHA-256 executable hash into `manifest.json`, and publishes `Autopilot-Windows-x64.zip` as an artifact.
+
+## Safety and portability rules
+
+- Resolve all runtime paths relative to the executable, so a changed USB drive letter is supported.
+- Do not scan the host machine.
+- Do not silently download or install tools.
+- Do not bypass DRM, encryption, licensing, or access controls.
+- Treat receipt hashes as tamper-evidence, not proof of who created the receipt.
+- Keep generated receipts and output on the portable drive.
