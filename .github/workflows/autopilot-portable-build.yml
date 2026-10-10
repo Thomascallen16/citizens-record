@@ -55,7 +55,7 @@ jobs:
           $exeHash = (Get-FileHash package/Autopilot/Autopilot.exe -Algorithm SHA256).Hash.ToLower()
           $manifest = [ordered]@{
             product = "Big Data Energy - Autopilot"
-            version = "0.1.1"
+            version = "0.1.2"
             target = "windows-x64"
             executable = "Autopilot.exe"
             executable_sha256 = $exeHash
