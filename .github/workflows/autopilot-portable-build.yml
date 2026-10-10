@@ -2,6 +2,11 @@ name: Autopilot Portable Windows Build
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "portable-engine/**"
+      - ".github/workflows/autopilot-portable-build.yml"
   pull_request:
     paths:
       - "portable-engine/**"
@@ -9,6 +14,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: autopilot-portable-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-windows:
@@ -20,29 +29,47 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Run portable engine tests
+        run: python -m unittest discover -s portable-engine/tests -v
       - name: Install build dependency
         run: python -m pip install --disable-pip-version-check pyinstaller
       - name: Syntax-check engine
         run: python -m py_compile portable-engine/engine.py
       - name: Build standalone executable
         run: pyinstaller --clean --onefile --name Autopilot portable-engine/engine.py
-      - name: Assemble portable folder
+      - name: Smoke test executable
+        run: ./dist/Autopilot.exe
+      - name: Assemble portable folder and ZIP
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           New-Item -ItemType Directory -Force -Path package/Autopilot | Out-Null
           Copy-Item dist/Autopilot.exe package/Autopilot/Autopilot.exe
           Copy-Item portable-engine/PORTABLE_BUILD.md package/Autopilot/README.txt
           New-Item -ItemType Directory -Force -Path package/Autopilot/tools/bento4, package/Autopilot/output, package/Autopilot/state/receipts | Out-Null
           @'
           Bento4 tools are not bundled in this development artifact.
+          Media inspection requiring Bento4 is not available until compatible binaries are supplied.
           This package does not bypass DRM or access controls.
           '@ | Set-Content package/Autopilot/tools/bento4/README.txt
-      - name: Smoke test executable
-        run: ./dist/Autopilot.exe
-      - name: Upload portable package
+          $exeHash = (Get-FileHash package/Autopilot/Autopilot.exe -Algorithm SHA256).Hash.ToLower()
+          $manifest = [ordered]@{
+            product = "Big Data Energy - Autopilot"
+            version = "0.1.1"
+            target = "windows-x64"
+            executable = "Autopilot.exe"
+            executable_sha256 = $exeHash
+            source_commit = "${{ github.sha }}"
+            bento4_included = $false
+          }
+          $manifest | ConvertTo-Json | Set-Content package/Autopilot/manifest.json
+          Compress-Archive -Path package/Autopilot/* -DestinationPath dist/Autopilot-Windows-x64.zip -Force
+      - name: Upload portable folder and ZIP
         uses: actions/upload-artifact@v4
         with:
           name: Autopilot-Windows-x64
-          path: package/Autopilot/
+          path: |
+            dist/Autopilot-Windows-x64.zip
+            package/Autopilot/
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
