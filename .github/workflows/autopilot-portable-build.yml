@@ -41,6 +41,14 @@ jobs:
         run: pyinstaller --clean --onefile --windowed --name PocketBuddy portable-engine/pocket_buddy.py
       - name: Smoke test engine executable
         run: ./dist/Autopilot.exe
+      - name: Verify packaged startup writes receipt beside executable
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          & package/Autopilot/Autopilot.exe
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Autopilot.exe exited with code $LASTEXITCODE" }
+          $receipts = Get-ChildItem package/Autopilot/state/receipts -Filter "*.json"
+          if (-not $receipts) { throw "No startup receipt was created beside the packaged executable" }
       - name: Assemble portable folder and ZIP
         shell: pwsh
         run: |
@@ -49,6 +57,23 @@ jobs:
           Copy-Item dist/Autopilot.exe package/Autopilot/Autopilot.exe
           Copy-Item dist/PocketBuddy.exe package/Autopilot/PocketBuddy.exe
           Copy-Item portable-engine/PORTABLE_BUILD.md package/Autopilot/README.txt
+          @'
+          @echo off
+          setlocal
+          cd /d "%~dp0"
+          echo.
+          echo Big Data Energy - Autopilot
+          echo Starting portable engine...
+          echo.
+          Autopilot.exe
+          set "engine_exit=%errorlevel%"
+          echo.
+          echo Startup records are stored in state\receipts beside this program.
+          if not "%engine_exit%"=="0" echo Autopilot exited with error code %engine_exit%.
+          echo.
+          pause
+          exit /b %engine_exit%
+          '@ | Set-Content package/Autopilot/Launch-Autopilot.bat
           New-Item -ItemType Directory -Force -Path package/Autopilot/tools/bento4, package/Autopilot/models, package/Autopilot/output, package/Autopilot/state/receipts | Out-Null
           @'
           POCKET BUDDY QUICK START
