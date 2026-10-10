@@ -8,7 +8,7 @@ looked up only inside this portable directory.
 from __future__ import annotations
 import hashlib, json, os, pathlib, subprocess, sys, time
 
-ROOT = pathlib.Path(__file__).resolve().parent
+ROOT = pathlib.Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else pathlib.Path(__file__).resolve().parent
 TOOLS = ROOT / "tools" / "bento4"
 STATE = ROOT / "state"
 RECEIPTS = STATE / "receipts"
