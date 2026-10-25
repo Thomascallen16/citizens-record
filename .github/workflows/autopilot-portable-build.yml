@@ -24,15 +24,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
       - name: Run portable engine and Pocket Buddy tests
         run: python -m unittest discover -s portable-engine/tests -v
       - name: Install build dependency
-        run: python -m pip install --disable-pip-version-check pyinstaller
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.22.3
       - name: Syntax-check Python modules
         run: python -m py_compile portable-engine/engine.py portable-engine/pocket_buddy.py
       - name: Build standalone engine executable
@@ -101,6 +101,27 @@ jobs:
           }
           $manifest | ConvertTo-Json | Set-Content package/Autopilot/manifest.json
           Compress-Archive -Path package/Autopilot/* -DestinationPath dist/Autopilot-Windows-x64.zip -Force
+      - name: Verify portable ZIP contents and manifest hashes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $manifest = Get-Content package/Autopilot/manifest.json -Raw | ConvertFrom-Json
+          $engineHash = (Get-FileHash package/Autopilot/Autopilot.exe -Algorithm SHA256).Hash.ToLower()
+          $chatHash = (Get-FileHash package/Autopilot/PocketBuddy.exe -Algorithm SHA256).Hash.ToLower()
+          if ($manifest.engine_sha256 -ne $engineHash) { throw "Autopilot.exe SHA-256 does not match manifest" }
+          if ($manifest.chat_sha256 -ne $chatHash) { throw "PocketBuddy.exe SHA-256 does not match manifest" }
+          if ($manifest.model_included -ne $false) { throw "Manifest must not claim the model is bundled" }
+          if ($manifest.bento4_included -ne $false) { throw "Manifest must not claim Bento4 is bundled" }
+          if (-not (Test-Path dist/Autopilot-Windows-x64.zip)) { throw "Portable ZIP was not created" }
+          $archive = [System.IO.Compression.ZipFile]::OpenRead("dist/Autopilot-Windows-x64.zip")
+          try {
+            $entries = @($archive.Entries | ForEach-Object { $_.FullName })
+            foreach ($required in @("Autopilot.exe", "PocketBuddy.exe", "README.txt", "Launch-Autopilot.bat", "QUICK_START.txt", "manifest.json", "tools/bento4/README.txt", "models/README.txt")) {
+              if ($entries -notcontains $required) { throw "Portable ZIP is missing required entry: $required" }
+            }
+          } finally {
+            $archive.Dispose()
+          }
       - name: Verify packaged startup writes receipt beside executable
         shell: pwsh
         run: |
@@ -110,7 +131,7 @@ jobs:
           $receipts = Get-ChildItem package/Autopilot/state/receipts -Filter "*.json"
           if (-not $receipts) { throw "No startup receipt was created beside the packaged executable" }
       - name: Upload portable folder and ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: Autopilot-Windows-x64
           path: |
