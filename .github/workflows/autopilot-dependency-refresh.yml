@@ -1,0 +1,61 @@
+name: Autopilot dependency refresh
+
+on:
+  push:
+    branches: [autopilot/security-dependency-refresh]
+    paths:
+      - "package.json"
+      - ".github/workflows/autopilot-dependency-refresh.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: autopilot-dependency-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.34.7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Regenerate lockfile with patched dependency versions
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Commit regenerated lockfile
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "security: refresh dependency lockfile"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Audit high and critical advisories
+        run: pnpm audit --audit-level high
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Test
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
