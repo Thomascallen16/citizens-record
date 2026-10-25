@@ -130,12 +130,18 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged Autopilot.exe exited with code $LASTEXITCODE" }
           $receipts = Get-ChildItem package/Autopilot/state/receipts -Filter "*.json"
           if (-not $receipts) { throw "No startup receipt was created beside the packaged executable" }
-      - name: Upload portable folder and ZIP
+      - name: Upload ready-to-extract portable folder
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: Autopilot-Windows-x64
-          path: |
-            dist/Autopilot-Windows-x64.zip
-            package/Autopilot/
+          path: package/Autopilot/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload portable ZIP separately
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: Autopilot-Windows-x64-ZIP
+          path: dist/Autopilot-Windows-x64.zip
           if-no-files-found: error
           retention-days: 30
