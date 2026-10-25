@@ -131,7 +131,7 @@ jobs:
           $receipts = Get-ChildItem package/Autopilot/state/receipts -Filter "*.json"
           if (-not $receipts) { throw "No startup receipt was created beside the packaged executable" }
       - name: Upload portable folder and ZIP
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: Autopilot-Windows-x64
           path: |
