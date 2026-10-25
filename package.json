@@ -79,8 +79,7 @@
     "wouter": "^3.3.5",
     "zod": "^4.1.12",
     "postcss": "^8.5.18",
-    "vite": "^7.3.5",
-    "vitest": "^3.2.6"
+    "vite": "^7.3.5"
   },
   "devDependencies": {
     "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
