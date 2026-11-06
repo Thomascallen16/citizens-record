@@ -21,3 +21,7 @@ The launcher must resolve paths relative to itself so the drive letter can chang
 4. Confirm a startup receipt is created under state/receipts.
 5. Add Bento4 binaries and verify mp4info is discovered locally.
 6. Run a media inspection against a user-authorized local file.
+
+## Receipt integrity checks
+- Run `Autopilot.exe --verify-receipt state/receipts/RECEIPT.json` to recompute a receipt digest.
+- The SHA-256 digest detects accidental or unauthorized edits when compared with a trusted copy; it is not a digital signature or proof of origin because an editor can recompute an unkeyed hash.
