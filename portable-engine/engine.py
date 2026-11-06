@@ -79,6 +79,8 @@ def receipt(event: str, payload: dict) -> pathlib.Path:
 def verify_receipt(path: pathlib.Path) -> bool:
     """Recompute a receipt digest; this detects edits but is not a signature."""
     record = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(record, dict):
+        return False
     supplied = record.pop("receipt_sha256", None)
     if not isinstance(supplied, str) or len(supplied) != 64:
         return False
