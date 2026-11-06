@@ -63,6 +63,22 @@ jobs:
           if (-not $receipt) { throw "Startup receipt was not written beside the executable" }
           & package/Autopilot/Autopilot.exe --verify-receipt $receipt.FullName
           if ($LASTEXITCODE -ne 0) { throw "Packaged receipt failed integrity verification" }
+      - name: Verify launcher preserves Python failure exit code
+        shell: pwsh
+        run: |
+          $fakeBin = Join-Path $env:RUNNER_TEMP "autopilot-fake-python"
+          New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+          Set-Content -Path (Join-Path $fakeBin "py.cmd") -Value ('@echo off' + [Environment]::NewLine + 'exit /b 7')
+          $oldPath = $env:PATH
+          try {
+            $env:PATH = "$fakeBin;$oldPath"
+            $launcher = (Resolve-Path "portable-engine/launch.bat").Path
+            & cmd.exe /d /c ('"' + $launcher + '"')
+            if ($LASTEXITCODE -ne 7) { throw "Launcher returned $LASTEXITCODE instead of preserving Python exit code 7" }
+          }
+          finally {
+            $env:PATH = $oldPath
+          }
       - name: Upload portable package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
