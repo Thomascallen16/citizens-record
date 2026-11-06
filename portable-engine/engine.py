@@ -6,13 +6,22 @@ The media adapter is intentionally provider-neutral; Bento4 executables are
 looked up only inside this portable directory.
 """
 from __future__ import annotations
-import hashlib, json, os, pathlib, subprocess, sys, time
+
+import argparse
+import hashlib
+import hmac
+import json
+import pathlib
+import subprocess
+import sys
+import time
 
 ROOT = pathlib.Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else pathlib.Path(__file__).resolve().parent
 TOOLS = ROOT / "tools" / "bento4"
 STATE = ROOT / "state"
 RECEIPTS = STATE / "receipts"
 OUTPUT = ROOT / "output"
+
 
 def sha256(path: pathlib.Path) -> str:
     h = hashlib.sha256()
@@ -21,16 +30,18 @@ def sha256(path: pathlib.Path) -> str:
             h.update(chunk)
     return h.hexdigest()
 
+
 def bento4(tool: str) -> pathlib.Path:
     candidates = [
         TOOLS / f"{tool}.exe",
         TOOLS / tool,
         TOOLS / f"{tool}.bin",
     ]
-    for p in candidates:
-        if p.is_file():
-            return p
+    for path in candidates:
+        if path.is_file():
+            return path
     raise FileNotFoundError(f"Bento4 tool not bundled: {tool}")
+
 
 def inspect_media(path: pathlib.Path) -> dict:
     path = path.resolve()
@@ -50,6 +61,7 @@ def inspect_media(path: pathlib.Path) -> dict:
         "stderr": proc.stderr,
     }
 
+
 def receipt(event: str, payload: dict) -> pathlib.Path:
     RECEIPTS.mkdir(parents=True, exist_ok=True)
     record = {
@@ -57,13 +69,39 @@ def receipt(event: str, payload: dict) -> pathlib.Path:
         "event": event,
         "payload": payload,
     }
-    digest = hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest()
+    digest = hashlib.sha256(json.dumps(record, sort_keys=True).encode("utf-8")).hexdigest()
     record["receipt_sha256"] = digest
     out = RECEIPTS / f"{int(time.time() * 1000)}-{event}.json"
     out.write_text(json.dumps(record, indent=2), encoding="utf-8")
     return out
 
-def main() -> int:
+
+def verify_receipt(path: pathlib.Path) -> bool:
+    """Recompute a receipt digest; this detects edits but is not a signature."""
+    record = json.loads(path.read_text(encoding="utf-8"))
+    supplied = record.pop("receipt_sha256", None)
+    if not isinstance(supplied, str) or len(supplied) != 64:
+        return False
+    expected = hashlib.sha256(
+        json.dumps(record, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    return hmac.compare_digest(supplied, expected)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Portable Intelligence Engine")
+    parser.add_argument("--verify-receipt", type=pathlib.Path, metavar="FILE")
+    args = parser.parse_args(argv)
+
+    if args.verify_receipt is not None:
+        try:
+            valid = verify_receipt(args.verify_receipt)
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            print(f"Receipt verification failed: {exc}", file=sys.stderr)
+            return 1
+        print("Receipt integrity: VERIFIED" if valid else "Receipt integrity: FAILED")
+        return 0 if valid else 1
+
     STATE.mkdir(exist_ok=True)
     OUTPUT.mkdir(exist_ok=True)
     print("Portable Intelligence Engine — Autopilot v0.1")
@@ -71,10 +109,11 @@ def main() -> int:
     print("Mode: LOCAL / READ-ONLY")
     print("No host-wide scanning. No silent network access.")
     print()
-    print("Bento4:", "available" if any((TOOLS / n).exists() for n in ("mp4info.exe","mp4info","mp4info.bin")) else "not bundled yet")
-    r = receipt("startup", {"root": str(ROOT), "mode": "local-read-only"})
-    print(f"Receipt: {r}")
+    print("Bento4:", "available" if any((TOOLS / n).exists() for n in ("mp4info.exe", "mp4info", "mp4info.bin")) else "not bundled yet")
+    path = receipt("startup", {"root": str(ROOT), "mode": "local-read-only"})
+    print(f"Receipt: {path}")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
