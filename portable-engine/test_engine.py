@@ -26,6 +26,12 @@ class ReceiptTests(unittest.TestCase):
             path.write_text(json.dumps(record), encoding="utf-8")
             self.assertFalse(engine.verify_receipt(path))
 
+    def test_non_object_receipt_fails_verification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "receipt.json"
+            path.write_text("[]", encoding="utf-8")
+            self.assertFalse(engine.verify_receipt(path))
+
     def test_missing_digest_fails_verification(self):
         with tempfile.TemporaryDirectory() as directory:
             path = pathlib.Path(directory) / "receipt.json"
